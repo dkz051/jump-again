@@ -5,25 +5,28 @@ use ieee.std_logic_arith.all;
 
 entity VgaController is
 	port(
-		address: out std_logic_vector(13 downto 0);
 		reset: in std_logic;
-		clk50: out std_logic;
-		q: in std_logic;
 		clk_0: in std_logic; -- 100 MHz clock input
 		hs, vs: out std_logic; -- horizontal/vertical sync signal
-		r, g, b: out std_logic_vector(2 downto 0)
+		r, g, b: out std_logic_vector(2 downto 0);
+
+		videoAddress: out std_logic_vector(16 downto 0);
+		videoOutput: in std_logic_vector(8 downto 0);
+		videoClock: out std_logic -- 25 MHz clock output
 	);
 end entity VgaController;
 
 architecture vga of VgaController is
 	signal r1, g1, b1: std_logic_vector(2 downto 0);
 	signal hs1, vs1: std_logic;
-	signal vector_x: std_logic_vector(9 downto 0); -- X coordinate
-	signal vector_y: std_logic_vector(8 downto 0); -- Y coordinate
+	signal vector_x: std_logic_vector(9 downto 0) := (others => '0'); -- X coordinate
+	signal vector_y: std_logic_vector(8 downto 0) := (others => '0'); -- Y coordinate
 	signal clk: std_logic;
 	signal clk_2: std_logic;
+
+	signal ramAddress: std_logic_vector(16 downto 0) := (others => '0');
 begin
-	clk50 <= clk;
+	videoClock <= clk;
 
 	process(clk_0) begin -- 100 MHz -> 25 MHz
 		if clk_0'event and clk_0 = '1' then
@@ -40,7 +43,15 @@ begin
 	process(clk, reset) begin -- horizontal
 		if reset = '0' then
 			vector_x <= (others => '0');
+			ramAddress <= (others => '0');
 		elsif clk'event and clk = '1' then
+			if vector_x < 409 and vector_y < 185 then
+				if vector_x = 408 and vector_y = 184 then
+					ramAddress <= (others => '0');
+				else
+					ramAddress <= ramAddress + 1;
+				end if;
+			end if;
 			if vector_x = 799 then
 				vector_x <= (others => '0');
 			else
@@ -63,7 +74,7 @@ begin
 		end if;
 	end process;
 
-	process(clk, reset) begin -- HS (16 + 640 + 96 + 48)
+	process(clk, reset) begin -- HS (640 + 16 + 96 + 48)
 		if reset = '0' then
 			hs1 <= '1';
 		elsif clk'event and clk = '1' then
@@ -75,7 +86,7 @@ begin
 		end if;
 	end process;
 
-	process(clk, reset) begin -- VS (10 + 480 + 2 + 33)
+	process(clk, reset) begin -- VS (480 + 10 + 2 + 33)
 		if reset = '0' then
 			vs1 <= '1';
 		elsif clk'event and clk = '1' then
@@ -109,21 +120,15 @@ begin
 			g1 <= "000";
 			b1 <= "000";
 		elsif clk'event and clk = '1' then
-			if vector_x(9 downto 5) = "01010" and vector_y(8 downto 5) = "0111" then
-				address <= "0001" & vector_y(4 downto 0) & vector_x(4 downto 0);
-				if q = '0' then
-					r1 <= "111";
-					b1 <= "111";
-					g1 <= "111";
-				else
-					r1 <= "000";
-					g1 <= "000";
-					b1 <= "111";
-				end if;
-			else
+			if vector_x >= 409 or vector_y >= 185 then
 				r1 <= "000";
 				g1 <= "000";
 				b1 <= "000";
+			else
+				videoAddress <= ramAddress;
+				r1 <= videoOutput(8 downto 6);
+				g1 <= videoOutput(5 downto 3);
+				b1 <= videoOutput(2 downto 0);
 			end if;
 		end if;
 	end process;
