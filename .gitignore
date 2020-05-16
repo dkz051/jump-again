@@ -4,3 +4,5 @@ output_files/*
 simulation/*
 *.bak
 Waveform.vwf
+*.stp
+greybox_tmp/*

@@ -11,24 +11,29 @@ entity VgaController is
 		hs, vs: out std_logic; -- horizontal/vertical sync signal
 		r, g, b: out std_logic_vector(2 downto 0);
 
-		videoAddress: out std_logic_vector(19 downto 0);
-		videoOutput: in std_logic_vector(31 downto 0)
+		videoAddress: out std_logic_vector(13 downto 0);
+		videoOutput: in std_logic_vector(8 downto 0)
 	);
 end entity VgaController;
 
 architecture vga of VgaController is
+	constant ramLines: integer := 12;
+
 	signal r1, g1, b1: std_logic_vector(2 downto 0);
 	signal hs1, vs1: std_logic;
 	signal vector_x: std_logic_vector(9 downto 0) := (others => '0'); -- X coordinate
 	signal vector_y: std_logic_vector(9 downto 0) := (others => '0'); -- Y coordinate
+
+	signal readFrom: std_logic_vector(13 downto 0) := (others => '0');
 begin
-	videoAddress <= "0" & ((vector_y & "000000000") + (vector_y & "0000000") + vector_x);
+	videoAddress <= readFrom;
 
 	process(clock, reset) -- X/Y coordinates
 	begin
 		if reset = '0' then
 			vector_x <= (others => '0');
 			vector_y <= (others => '0');
+			readFrom <= (others => '0');
 		elsif rising_edge(clock) then
 			if vector_x = 799 then
 				vector_x <= (others => '0');
@@ -39,6 +44,12 @@ begin
 				end if;
 			else
 				vector_x <= vector_x + 1;
+			end if;
+
+			if readFrom = ramLines * 800 - 1 then
+				readFrom <= (others => '0');
+			else
+				readFrom <= readFrom + 1;
 			end if;
 		end if;
 	end process;

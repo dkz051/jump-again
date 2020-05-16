@@ -15,21 +15,24 @@ entity Renderer is
 		signal readAddress: out std_logic_vector(16 downto 0);
 		signal readOutput: in std_logic_vector(8 downto 0);
 
-		signal writeAddress: out std_logic_vector(19 downto 0);
-		signal writeContent: out std_logic_vector(31 downto 0)
+		signal writeAddress: out std_logic_vector(13 downto 0);
+		signal writeContent: out std_logic_vector(8 downto 0)
 	);
 end entity Renderer;
 
 architecture Render of Renderer is
+	constant ramLines: integer := 12;
+
 	signal x: std_logic_vector(9 downto 0) := (others => '0');
 	signal y: std_logic_vector(9 downto 0) := (others => '0');
 
 	signal readFrom: std_logic_vector(16 downto 0) := (others => '0');
+	signal writeTo: std_logic_vector(13 downto 0) := (others => '0');
 	signal writeData: std_logic_vector(8 downto 0) := (others => '0');
 begin
 	readAddress <= readFrom;
-	writeAddress <= "0" & ((y & "000000000") + (y & "0000000") + x);
-	writeContent <= "00000000000000000000000" & writeData;
+	writeAddress <= writeTo;
+	writeContent <= writeData;
 
 	process(reset, clock)
 	begin
@@ -37,6 +40,7 @@ begin
 			x <= (others => '0');
 			y <= (others => '0');
 			readFrom <= (others => '0');
+			writeTo <= (others => '0');
 		elsif rising_edge(clock) then
 			if x < 409 and y < 185 then
 				if x = 408 and y = 184 then
@@ -44,6 +48,12 @@ begin
 				else
 					readFrom <= readFrom + 1;
 				end if;
+			end if;
+
+			if writeTo = ramLines * 800 - 1 then
+				writeTo <= (others => '0');
+			else
+				writeTo <= writeTo + 1;
 			end if;
 
 			if x = 799 then
@@ -59,13 +69,11 @@ begin
 		end if;
 	end process;
 
-	process(reset, x, y, readFrom, readOutput)
+	process(reset, x, y, readFrom, writeTo, readOutput)
 	begin
 		if reset = '0' then
 			writeData <= (others => '0');
 		else
-			-- writeData <= x(8 downto 4) & y(7 downto 4);
-
 			if x < 409 and y < 185 then
 				writeData <= readOutput;
 			else

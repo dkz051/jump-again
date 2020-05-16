@@ -37,8 +37,8 @@ architecture jump of JumpAgain is
 			hs, vs: out std_logic; -- horizontal/vertical sync signal
 			r, g, b: out std_logic_vector(2 downto 0);
 
-			videoAddress: out std_logic_vector(19 downto 0);
-			videoOutput: in std_logic_vector(31 downto 0)
+			videoAddress: out std_logic_vector(13 downto 0);
+			videoOutput: in std_logic_vector(8 downto 0)
 		);
 	end component VgaController;
 
@@ -46,6 +46,20 @@ architecture jump of JumpAgain is
 		port(
 			address_a: in std_logic_vector(16 downto 0);
 			address_b: in std_logic_vector(16 downto 0);
+			clock: in std_logic := '1';
+			data_a: in std_logic_vector(8 downto 0);
+			data_b: in std_logic_vector(8 downto 0);
+			wren_a: in std_logic := '0';
+			wren_b: in std_logic := '0';
+			q_a: out std_logic_vector(8 downto 0);
+			q_b: out std_logic_vector(8 downto 0)
+		);
+	end component;
+
+	component video_memory
+		port(
+			address_a: in std_logic_vector(13 downto 0);
+			address_b: in std_logic_vector(13 downto 0);
 			clock: in std_logic := '1';
 			data_a: in std_logic_vector(8 downto 0);
 			data_b: in std_logic_vector(8 downto 0);
@@ -67,31 +81,10 @@ architecture jump of JumpAgain is
 			signal readAddress: out std_logic_vector(16 downto 0);
 			signal readOutput: in std_logic_vector(8 downto 0);
 
-			signal writeAddress: out std_logic_vector(19 downto 0);
-			signal writeContent: out std_logic_vector(31 downto 0)
+			signal writeAddress: out std_logic_vector(13 downto 0);
+			signal writeContent: out std_logic_vector(8 downto 0)
 		);
 	end component Renderer;
-
-	component SramController is
-		port(
-			reset, clock: in std_logic; -- 100 MHz clock
-
-			sramClock: in std_logic; -- 50 MHz clock
-
-			sramAddress: out std_logic_vector(19 downto 0);
-			sramData: inout std_logic_vector(31 downto 0);
-
-			sramNotWe: out std_logic; -- write enable
-			sramNotOe: out std_logic; -- read enable
-			sramNotCs: out std_logic; -- chip select
-
-			vgaReadAddress: in std_logic_vector(19 downto 0);
-			vgaReadResult: out std_logic_vector(31 downto 0);
-
-			rendererWriteAddress: in std_logic_vector(19 downto 0);
-			rendererWriteContent: in std_logic_vector(31 downto 0)
-		);
-	end component SramController;
 
 	component pll
 		port(
@@ -116,11 +109,11 @@ architecture jump of JumpAgain is
 	signal rendererReadAddress: std_logic_vector(16 downto 0);
 	signal rendererReadReturn: std_logic_vector(8 downto 0);
 
-	signal videoReadAddress: std_logic_vector(19 downto 0);
-	signal videoColorOutput: std_logic_vector(31 downto 0);
+	signal videoReadAddress: std_logic_vector(13 downto 0);
+	signal videoColorOutput: std_logic_vector(8 downto 0);
 
-	signal videoWriteAddress: std_logic_vector(19 downto 0);
-	signal videoWriteContent: std_logic_vector(31 downto 0);
+	signal videoWriteAddress: std_logic_vector(13 downto 0);
+	signal videoWriteContent: std_logic_vector(8 downto 0);
 begin
 	-- control: KeyboardControl port map(ps2Data, ps2Clock, clock, reset, keyUp, keyDown, keyLeft, keyRight);
 
@@ -138,7 +131,7 @@ begin
 		videoWriteAddress, videoWriteContent
 	);
 
-	videoMemory: SramController port map(reset, clock, sramClock, sramAddress, sramData, sramNotWe, sramNotOe, sramNotCs, videoReadAddress, videoColorOutput, videoWriteAddress, videoWriteContent);
+	videoMemory: video_memory port map(videoReadAddress, videoWriteAddress, clock, (others => '0'), videoWriteContent, '0', '1', videoColorOutput, open);
 
 	dataMemory: data port map(rendererReadAddress, (others => '0'), clock, (others => '0'), (others => '0'), '0', '0', rendererReadReturn, open);
 end architecture jump;
