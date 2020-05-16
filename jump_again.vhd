@@ -8,12 +8,12 @@ entity JumpAgain is
 		ps2Data, ps2Clock: in std_logic;
 		clock, reset: in std_logic;
 
-		keyUp, keyDown, keyLeft, keyRight: out std_logic;
-
-		seg_1, seg_2: out std_logic_vector(6 downto 0);
-
 		vgaHs, vgaVs: out std_logic;
-		vgaR, vgaG, vgaB: out std_logic_vector(2 downto 0)
+		vgaR, vgaG, vgaB: out std_logic_vector(2 downto 0);
+
+		sramAddress: out std_logic_vector(19 downto 0);
+		sramData: inout std_logic_vector(31 downto 0);
+		sramNotWe, sramNotOe, sramNotCs: out std_logic
 	);
 end entity JumpAgain;
 
@@ -26,33 +26,23 @@ architecture jump of JumpAgain is
 			keyUp: out std_logic := '0';
 			keyDown: out std_logic := '0';
 			keyLeft: out std_logic := '0';
-			keyRight: out std_logic := '0';
-
-			scancodes: out std_logic_vector(7 downto 0)
+			keyRight: out std_logic := '0'
 		);
 	end component KeyboardControl;
-
-	component Led7 is
-		port(
-			value: in std_logic_vector(3 downto 0);
-			segments: out std_logic_vector(6 downto 0)
-		);
-	end component Led7;
 
 	component VgaController is
 		port(
 			reset: in std_logic;
-			clk_0: in std_logic; -- 100 MHz clock input
+			clock: in std_logic; -- 100 MHz clock input
 			hs, vs: out std_logic; -- horizontal/vertical sync signal
 			r, g, b: out std_logic_vector(2 downto 0);
 
-			videoAddress: out std_logic_vector(16 downto 0);
-			videoOutput: in std_logic_vector(8 downto 0);
-			videoClock: out std_logic -- 25 MHz clock output
+			videoAddress: out std_logic_vector(19 downto 0);
+			videoOutput: in std_logic_vector(31 downto 0)
 		);
 	end component VgaController;
 
-	component ram
+	component data
 		port(
 			address_a: in std_logic_vector(16 downto 0);
 			address_b: in std_logic_vector(16 downto 0);
@@ -66,15 +56,89 @@ architecture jump of JumpAgain is
 		);
 	end component;
 
-	signal scancode: std_logic_vector(7 downto 0);
+	component Renderer is
+		port(
+			signal reset: in std_logic;
+			signal clock: in std_logic; -- 25 MHz clock
 
-	signal videoAddress: std_logic_vector(16 downto 0);
+			-- signal heroX: in std_logic_vector(9 downto 0);
+			-- signal heroY: in std_logic_vector(8 downto 0);
+
+			signal readAddress: out std_logic_vector(16 downto 0);
+			signal readOutput: in std_logic_vector(8 downto 0);
+
+			signal writeAddress: out std_logic_vector(19 downto 0);
+			signal writeContent: out std_logic_vector(31 downto 0)
+		);
+	end component Renderer;
+
+	component SramController is
+		port(
+			reset, clock: in std_logic; -- 100 MHz clock
+
+			sramClock: in std_logic; -- 50 MHz clock
+
+			sramAddress: out std_logic_vector(19 downto 0);
+			sramData: inout std_logic_vector(31 downto 0);
+
+			sramNotWe: out std_logic; -- write enable
+			sramNotOe: out std_logic; -- read enable
+			sramNotCs: out std_logic; -- chip select
+
+			vgaReadAddress: in std_logic_vector(19 downto 0);
+			vgaReadResult: out std_logic_vector(31 downto 0);
+
+			rendererWriteAddress: in std_logic_vector(19 downto 0);
+			rendererWriteContent: in std_logic_vector(31 downto 0)
+		);
+	end component SramController;
+
+	component pll
+		port(
+			areset: in std_logic := '0';
+			inclk0: in std_logic := '0';
+			c0: out std_logic;
+			c1: out std_logic;
+			locked: out std_logic
+		);
+	end component;
+
+	-- signal heroX: std_logic_vector(9 downto 0);
+	-- signal heroY: std_logic_vector(8 downto 0);
+
 	signal videoClock: std_logic;
-	signal videoOutput: std_logic_vector(8 downto 0);
+	signal sramClock: std_logic;
+	signal renderClock: std_logic;
+
+	-- signal logicReadAddress: std_logic_vector(16 downto 0);
+	-- signal logicReadReturn: std_logic_vector(8 downto 0);
+
+	signal rendererReadAddress: std_logic_vector(16 downto 0);
+	signal rendererReadReturn: std_logic_vector(8 downto 0);
+
+	signal videoReadAddress: std_logic_vector(19 downto 0);
+	signal videoColorOutput: std_logic_vector(31 downto 0);
+
+	signal videoWriteAddress: std_logic_vector(19 downto 0);
+	signal videoWriteContent: std_logic_vector(31 downto 0);
 begin
-	control: KeyboardControl port map(ps2Data, ps2Clock, clock, reset, keyUp, keyDown, keyLeft, keyRight, scancode);
-	videoMemory: ram port map(videoAddress, (others => '0'), videoClock, (others => '0'), (others => '0'), '0', '0', videoOutput, open);
-	vga: VgaController port map(reset, clock, vgaHs, vgaVs, vgaR, vgaG, vgaB, videoAddress, videoOutput, videoClock);
-	led1: Led7 port map(scancode(3 downto 0), seg_1);
-	led2: Led7 port map(scancode(7 downto 4), seg_2);
+	-- control: KeyboardControl port map(ps2Data, ps2Clock, clock, reset, keyUp, keyDown, keyLeft, keyRight);
+
+	pllClock: pll port map(not reset, clock, videoClock, sramClock, open);
+
+	-- sramClock <= clock;
+	renderClock <= videoClock;
+
+	vga: VgaController port map(reset, videoClock, vgaHs, vgaVs, vgaR, vgaG, vgaB, videoReadAddress, videoColorOutput);
+
+	render: Renderer port map(
+		reset, renderClock,
+		-- heroX, heroY,
+		rendererReadAddress, rendererReadReturn,
+		videoWriteAddress, videoWriteContent
+	);
+
+	videoMemory: SramController port map(reset, clock, sramClock, sramAddress, sramData, sramNotWe, sramNotOe, sramNotCs, videoReadAddress, videoColorOutput, videoWriteAddress, videoWriteContent);
+
+	dataMemory: data port map(rendererReadAddress, (others => '0'), clock, (others => '0'), (others => '0'), '0', '0', rendererReadReturn, open);
 end architecture jump;

@@ -11,9 +11,7 @@ entity KeyboardControl is
 		keyUp: out std_logic := '0'; -- key W
 		keyDown: out std_logic := '0'; -- key S
 		keyLeft: out std_logic := '0'; -- key A
-		keyRight: out std_logic := '0'; -- key D
-
-		scancodes: out std_logic_vector(7 downto 0) := "00000000"
+		keyRight: out std_logic := '0' -- key D
 	);
 end entity KeyboardControl;
 
@@ -41,9 +39,7 @@ begin
 			keyLeft <= '0';
 			keyRight <= '0';
 			state <= pending;
-			scancodes <= "00000000";
 		elsif rising_edge(ready) then
-			scancodes <= scancode;
 			case state is
 				when pending =>
 					case scancode is

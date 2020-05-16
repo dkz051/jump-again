@@ -4,7 +4,7 @@
 -- MODULE: altsyncram 
 
 -- ============================================================
--- File Name: ram.vhd
+-- File Name: data.vhd
 -- Megafunction Name(s):
 -- 			altsyncram
 --
@@ -39,7 +39,7 @@ USE ieee.std_logic_1164.all;
 LIBRARY altera_mf;
 USE altera_mf.all;
 
-ENTITY ram IS
+ENTITY data IS
 	PORT
 	(
 		address_a		: IN STD_LOGIC_VECTOR (16 DOWNTO 0);
@@ -52,10 +52,10 @@ ENTITY ram IS
 		q_a		: OUT STD_LOGIC_VECTOR (8 DOWNTO 0);
 		q_b		: OUT STD_LOGIC_VECTOR (8 DOWNTO 0)
 	);
-END ram;
+END data;
 
 
-ARCHITECTURE SYN OF ram IS
+ARCHITECTURE SYN OF data IS
 
 	SIGNAL sub_wire0	: STD_LOGIC_VECTOR (8 DOWNTO 0);
 	SIGNAL sub_wire1	: STD_LOGIC_VECTOR (8 DOWNTO 0);
@@ -116,7 +116,7 @@ BEGIN
 		clock_enable_output_a => "BYPASS",
 		clock_enable_output_b => "BYPASS",
 		indata_reg_b => "CLOCK0",
-		init_file => "b.mif",
+		init_file => "../b.mif",
 		intended_device_family => "Cyclone II",
 		lpm_type => "altsyncram",
 		numwords_a => 75665,
@@ -128,7 +128,7 @@ BEGIN
 		outdata_reg_b => "CLOCK0",
 		power_up_uninitialized => "FALSE",
 		ram_block_type => "M4K",
-		read_during_write_mode_mixed_ports => "OLD_DATA",
+		read_during_write_mode_mixed_ports => "DONT_CARE",
 		widthad_a => 17,
 		widthad_b => 17,
 		width_a => 9,
@@ -188,12 +188,12 @@ END SYN;
 -- Retrieval info: PRIVATE: MAXIMUM_DEPTH NUMERIC "0"
 -- Retrieval info: PRIVATE: MEMSIZE NUMERIC "680985"
 -- Retrieval info: PRIVATE: MEM_IN_BITS NUMERIC "0"
--- Retrieval info: PRIVATE: MIFfilename STRING "b.mif"
+-- Retrieval info: PRIVATE: MIFfilename STRING "../b.mif"
 -- Retrieval info: PRIVATE: OPERATION_MODE NUMERIC "3"
 -- Retrieval info: PRIVATE: OUTDATA_ACLR_B NUMERIC "0"
 -- Retrieval info: PRIVATE: OUTDATA_REG_B NUMERIC "1"
 -- Retrieval info: PRIVATE: RAM_BLOCK_TYPE NUMERIC "2"
--- Retrieval info: PRIVATE: READ_DURING_WRITE_MODE_MIXED_PORTS NUMERIC "1"
+-- Retrieval info: PRIVATE: READ_DURING_WRITE_MODE_MIXED_PORTS NUMERIC "2"
 -- Retrieval info: PRIVATE: READ_DURING_WRITE_MODE_PORT_A NUMERIC "3"
 -- Retrieval info: PRIVATE: READ_DURING_WRITE_MODE_PORT_B NUMERIC "3"
 -- Retrieval info: PRIVATE: REGdata NUMERIC "1"
@@ -222,7 +222,7 @@ END SYN;
 -- Retrieval info: CONSTANT: CLOCK_ENABLE_OUTPUT_A STRING "BYPASS"
 -- Retrieval info: CONSTANT: CLOCK_ENABLE_OUTPUT_B STRING "BYPASS"
 -- Retrieval info: CONSTANT: INDATA_REG_B STRING "CLOCK0"
--- Retrieval info: CONSTANT: INIT_FILE STRING "b.mif"
+-- Retrieval info: CONSTANT: INIT_FILE STRING "../b.mif"
 -- Retrieval info: CONSTANT: INTENDED_DEVICE_FAMILY STRING "Cyclone II"
 -- Retrieval info: CONSTANT: LPM_TYPE STRING "altsyncram"
 -- Retrieval info: CONSTANT: NUMWORDS_A NUMERIC "75665"
@@ -234,7 +234,7 @@ END SYN;
 -- Retrieval info: CONSTANT: OUTDATA_REG_B STRING "CLOCK0"
 -- Retrieval info: CONSTANT: POWER_UP_UNINITIALIZED STRING "FALSE"
 -- Retrieval info: CONSTANT: RAM_BLOCK_TYPE STRING "M4K"
--- Retrieval info: CONSTANT: READ_DURING_WRITE_MODE_MIXED_PORTS STRING "OLD_DATA"
+-- Retrieval info: CONSTANT: READ_DURING_WRITE_MODE_MIXED_PORTS STRING "DONT_CARE"
 -- Retrieval info: CONSTANT: WIDTHAD_A NUMERIC "17"
 -- Retrieval info: CONSTANT: WIDTHAD_B NUMERIC "17"
 -- Retrieval info: CONSTANT: WIDTH_A NUMERIC "9"
@@ -260,9 +260,9 @@ END SYN;
 -- Retrieval info: CONNECT: @wren_b 0 0 0 0 wren_b 0 0 0 0
 -- Retrieval info: CONNECT: q_a 0 0 9 0 @q_a 0 0 9 0
 -- Retrieval info: CONNECT: q_b 0 0 9 0 @q_b 0 0 9 0
--- Retrieval info: GEN_FILE: TYPE_NORMAL ram.vhd TRUE
--- Retrieval info: GEN_FILE: TYPE_NORMAL ram.inc FALSE
--- Retrieval info: GEN_FILE: TYPE_NORMAL ram.cmp TRUE
--- Retrieval info: GEN_FILE: TYPE_NORMAL ram.bsf FALSE
--- Retrieval info: GEN_FILE: TYPE_NORMAL ram_inst.vhd FALSE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL data.vhd TRUE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL data.inc FALSE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL data.cmp TRUE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL data.bsf FALSE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL data_inst.vhd FALSE
 -- Retrieval info: LIB_FILE: altera_mf
