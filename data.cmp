@@ -16,8 +16,8 @@
 component data
 	PORT
 	(
-		address_a		: IN STD_LOGIC_VECTOR (16 DOWNTO 0);
-		address_b		: IN STD_LOGIC_VECTOR (16 DOWNTO 0);
+		address_a		: IN STD_LOGIC_VECTOR (15 DOWNTO 0);
+		address_b		: IN STD_LOGIC_VECTOR (15 DOWNTO 0);
 		clock		: IN STD_LOGIC  := '1';
 		data_a		: IN STD_LOGIC_VECTOR (8 DOWNTO 0);
 		data_b		: IN STD_LOGIC_VECTOR (8 DOWNTO 0);

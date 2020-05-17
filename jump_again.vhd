@@ -3,7 +3,7 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
 use ieee.std_logic_arith.all;
 
-entity JumpAgain is
+entity JumpAgain is -- top entity
 	port(
 		ps2Data, ps2Clock: in std_logic;
 		clock, reset: in std_logic;
@@ -44,8 +44,8 @@ architecture jump of JumpAgain is
 
 	component data
 		port(
-			address_a: in std_logic_vector(16 downto 0);
-			address_b: in std_logic_vector(16 downto 0);
+			address_a: in std_logic_vector(15 downto 0);
+			address_b: in std_logic_vector(15 downto 0);
 			clock: in std_logic := '1';
 			data_a: in std_logic_vector(8 downto 0);
 			data_b: in std_logic_vector(8 downto 0);
@@ -78,7 +78,7 @@ architecture jump of JumpAgain is
 			-- signal heroX: in std_logic_vector(9 downto 0);
 			-- signal heroY: in std_logic_vector(8 downto 0);
 
-			signal readAddress: out std_logic_vector(16 downto 0);
+			signal readAddress: out std_logic_vector(15 downto 0);
 			signal readOutput: in std_logic_vector(8 downto 0);
 
 			signal writeAddress: out std_logic_vector(13 downto 0);
@@ -97,7 +97,7 @@ architecture jump of JumpAgain is
 	end component;
 
 	-- signal heroX: std_logic_vector(9 downto 0);
-	-- signal heroY: std_logic_vector(8 downto 0);
+	-- signal heroY: std_logic_vector(8 downto 0);  -- connect logic and renderer
 
 	signal videoClock: std_logic;
 	signal sramClock: std_logic;
@@ -106,7 +106,7 @@ architecture jump of JumpAgain is
 	-- signal logicReadAddress: std_logic_vector(16 downto 0);
 	-- signal logicReadReturn: std_logic_vector(8 downto 0);
 
-	signal rendererReadAddress: std_logic_vector(16 downto 0);
+	signal rendererReadAddress: std_logic_vector(15 downto 0);
 	signal rendererReadReturn: std_logic_vector(8 downto 0);
 
 	signal videoReadAddress: std_logic_vector(13 downto 0);
