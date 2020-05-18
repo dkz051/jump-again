@@ -133,6 +133,8 @@ set_location_assignment PIN_W24 -to sramData[3]
 set_location_assignment PIN_U22 -to sramData[2]
 set_location_assignment PIN_Y25 -to sramData[1]
 set_location_assignment PIN_Y26 -to sramData[0]
+
+set_global_assignment -name VHDL_FILE logicloop.vhd
 set_global_assignment -name VHDL_FILE pll.vhd
 set_global_assignment -name SOURCE_FILE pll.cmp
 set_global_assignment -name VHDL_FILE renderer.vhd
@@ -149,5 +151,6 @@ set_global_assignment -name VHDL_FILE jump_again.vhd
 set_global_assignment -name QIP_FILE video_memory.qip
 set_global_assignment -name QIP_FILE data.qip
 set_global_assignment -name QIP_FILE pll.qip
-
+set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
+set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

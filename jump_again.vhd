@@ -95,10 +95,21 @@ architecture jump of JumpAgain is
 			locked: out std_logic
 		);
 	end component;
-
+	
+	component logicloop is
+		port(
+		clk,rst: in std_logic; -- we need clock
+		keyLeft,keyRight,keyUp: in std_logic; -- "keyboard input"
+		curX: out std_logic_vector(9 downto 0);
+		curY: out std_logic_vector(8 downto 0); -- place of hero
+		num_of_map: out integer -- which map?
+		-- if there's no moving parts other than hero, if the status of grid won't change, then,
+		-- (X,Y) of hero and number of map, is enough to send to VGA control module
+	    );
+	end component logicloop;
 	signal heroX: std_logic_vector(9 downto 0) := "0000111111"; -- hardcode
 	signal heroY: std_logic_vector(8 downto 0) := "000111000";  -- connect logic and renderer
-
+	signal keyUp, keyDown, keyLeft, keyRight: std_logic;
 	signal videoClock: std_logic;
 	signal sramClock: std_logic;
 	signal renderClock: std_logic;
@@ -115,7 +126,7 @@ architecture jump of JumpAgain is
 	signal videoWriteAddress: std_logic_vector(13 downto 0);
 	signal videoWriteContent: std_logic_vector(8 downto 0);
 begin
-	-- control: KeyboardControl port map(ps2Data, ps2Clock, clock, reset, keyUp, keyDown, keyLeft, keyRight);
+	control: KeyboardControl port map(ps2Data, ps2Clock, clock, reset, keyUp, keyDown, keyLeft, keyRight);
 
 	pllClock: pll port map(not reset, clock, videoClock, sramClock, open);
 
@@ -130,7 +141,7 @@ begin
 		rendererReadAddress, rendererReadReturn,
 		videoWriteAddress, videoWriteContent
 	);
-
+	logic: logicloop port map(clock, reset, keyLeft, keyRight, keyUp, heroX, heroY, open);
 	videoMemory: video_memory port map(videoReadAddress, videoWriteAddress, clock, (others => '0'), videoWriteContent, '0', '1', videoColorOutput, open);
 
 	dataMemory: data port map(rendererReadAddress, (others => '0'), clock, (others => '0'), (others => '0'), '0', '0', rendererReadReturn, open);
