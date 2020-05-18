@@ -68,9 +68,11 @@ begin
 							cnt3 <= cnt3_x0;
 						else
 							if cnt3 = 2 then 
-								readFrom <= readFrom + 1;
 								cnt3 <= 0;
 							else	
+								if cnt3 = 1 then	
+									readFrom <= readFrom + 1;
+								end if;
 								cnt3 <= cnt3 + 1;
 							end if;
 						end if;
