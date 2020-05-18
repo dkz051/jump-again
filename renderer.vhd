@@ -128,7 +128,7 @@ begin
 		else
 			if x < 640 and y < 480 then -- inside the map
 			
-				if x < heroX and y < heroY and heroX < x + 20 and heroY < y + 20  then
+				if  heroX<x and heroY<y and  x < heroX + 20 and  y < heroY+ 20  then
 					writeData <= "000000111";
 				else
 					case color_typ is
