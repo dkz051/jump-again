@@ -109,9 +109,8 @@ begin
 			end if;
 		end if;
 	end process;
-	process (cnt3)
+	process (cnt3, readOutput)
 	begin
-		wait 20 ns;
 		case cnt3 is
 				when 0 =>
 					color_typ <= readOutput(8 downto 6);
