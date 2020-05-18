@@ -107,8 +107,8 @@ architecture jump of JumpAgain is
 		-- (X,Y) of hero and number of map, is enough to send to VGA control module
 	    );
 	end component logicloop;
-	signal heroX: std_logic_vector(9 downto 0) := "0000111111"; -- hardcode
-	signal heroY: std_logic_vector(8 downto 0) := "000111000";  -- connect logic and renderer
+	signal heroX: std_logic_vector(9 downto 0); -- hardcode
+	signal heroY: std_logic_vector(8 downto 0);  -- connect logic and renderer
 	signal keyUp, keyDown, keyLeft, keyRight: std_logic;
 	signal videoClock: std_logic;
 	signal sramClock: std_logic;

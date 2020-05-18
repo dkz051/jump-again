@@ -29,8 +29,9 @@ architecture logic of logicloop is
 	signal heroX: std_logic_vector(9 downto 0);
 	signal heroY: std_logic_vector(8 downto 0);
 	signal clk_counter: integer;
-	signal clk2: std_logic;
+	signal clk2: std_logic; 
 begin
+
 	curX <= heroX;
 	curY <= heroY;
 	num_of_map <= 0;
@@ -40,18 +41,21 @@ begin
 			clk_counter <= 0;
 			clk2 <= '0';
 		elsif rising_edge(clk) then
+			clk_counter <= clk_counter + 1;
 			if clk_counter = 1000000 then
 				clk2 <= not clk2; -- clk2: 50Hz
 			end if;
 		end if;
-		
 	end process;
-	process(clk2,rst)
+	
+	process(rst, clk2)
 	begin
 		if rst = '0' then
-		else
+			heroX <= "0111000000";
+			heroY <= "011001111";
+		elsif  rising_edge(clk2) then
 			if keyLeft = '0' and keyRight = '1' then
-				if heroX <620 then
+				if heroX < 620 then
 					heroX <= heroX + 1;
 				end if;
 			elsif keyLeft = '1' and keyRight = '0' then
