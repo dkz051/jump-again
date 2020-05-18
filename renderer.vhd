@@ -67,10 +67,11 @@ begin
 							readFrom <= readFrom_x0;
 							cnt3 <= cnt3_x0;
 						else
-							cnt3 <= cnt3 + 1;
-							if cnt3 = 3 then 
-								cnt3 <= 0; 
+							if cnt3 = 2 then 
 								readFrom <= readFrom + 1;
+								cnt3 <= 0;
+							else	
+								cnt3 <= cnt3 + 1;
 							end if;
 						end if;
 					end if;
@@ -108,8 +109,9 @@ begin
 			end if;
 		end if;
 	end process;
-	process (cnt3, readOutput)
+	process (cnt3)
 	begin
+		wait 20 ns;
 		case cnt3 is
 				when 0 =>
 					color_typ <= readOutput(8 downto 6);
@@ -120,7 +122,7 @@ begin
 		end case;
 	end process;
 ------------------------connnect render result and video memory
-	process(reset, x, y, readFrom, writeTo, readOutput)
+	process(reset,x,color_typ)
 	begin
 		if reset = '0' then
 			writeData <= (others => '0');
