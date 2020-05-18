@@ -52,6 +52,8 @@ begin
 		elsif rising_edge(clock) then
 			if x < 640 and y < 480 then
 				if x = 639 and y = 479 then
+					readFrom_x0 <= (others => '0');
+					cnt3_x0 <= 0;
 					readFrom <= (others => '0');
 					cnt3 <= 0;
 				else
