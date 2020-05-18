@@ -44,6 +44,7 @@ begin
 			clk_counter <= clk_counter + 1;
 			if clk_counter = 1000000 then
 				clk2 <= not clk2; -- clk2: 50Hz
+				clk_counter <= 0;
 			end if;
 		end if;
 	end process;
