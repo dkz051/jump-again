@@ -9,8 +9,8 @@ entity Renderer is
 		signal reset: in std_logic;
 		signal clock: in std_logic; -- 25 MHz clock
 
-		-- signal heroX: in std_logic_vector(9 downto 0);
-		-- signal heroY: in std_logic_vector(8 downto 0);
+		signal heroX: in std_logic_vector(9 downto 0);
+		signal heroY: in std_logic_vector(8 downto 0);
 
 		signal readAddress: out std_logic_vector(15 downto 0);
 		signal readOutput: in std_logic_vector(8 downto 0);
@@ -108,6 +108,17 @@ begin
 			end if;
 		end if;
 	end process;
+	process (cnt3, readOutput)
+	begin
+		case cnt3 is
+				when 0 =>
+					color_typ <= readOutput(8 downto 6);
+				when 1 =>
+					color_typ <= readOutput(5 downto 3);
+				when others =>
+					color_typ <= readOutput(2 downto 0);
+		end case;
+	end process;
 ------------------------connnect render result and video memory
 	process(reset, x, y, readFrom, writeTo, readOutput)
 	begin
@@ -115,22 +126,19 @@ begin
 			writeData <= (others => '0');
 		else
 			if x < 640 and y < 480 then -- inside the map
-				case cnt3 is
-				when 0 =>
-					color_typ <= readOutput(8 downto 6);
-				when 1 =>
-					color_typ <= readOutput(5 downto 3);
-				when others =>
-					color_typ <= readOutput(2 downto 0);
-				end case;
-				case color_typ is
-				when "000" =>
-					writeData <= "111111111";
-				when "001" =>
-					writedata <= "000111000";
-				when others => 
-					writeData <= "111000000";
-				end case;
+			
+				if x < heroX and y < heroY and heroX < x + 20 and heroY < y + 20  then
+					writeData <= "000000111";
+				else
+					case color_typ is
+					when "000" =>
+						writeData <= "111111111";
+					when "001" =>
+						writedata <= "111000000";
+					when others => 
+						writeData <= "000111000";
+					end case;
+				end if;
 			else
 				writeData <= (others => '0');
 			end if;

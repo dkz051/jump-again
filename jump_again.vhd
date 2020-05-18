@@ -75,8 +75,8 @@ architecture jump of JumpAgain is
 			signal reset: in std_logic;
 			signal clock: in std_logic; -- 25 MHz clock
 
-			-- signal heroX: in std_logic_vector(9 downto 0);
-			-- signal heroY: in std_logic_vector(8 downto 0);
+			signal heroX: in std_logic_vector(9 downto 0);
+		   signal heroY: in std_logic_vector(8 downto 0);
 
 			signal readAddress: out std_logic_vector(15 downto 0);
 			signal readOutput: in std_logic_vector(8 downto 0);
@@ -96,15 +96,15 @@ architecture jump of JumpAgain is
 		);
 	end component;
 
-	-- signal heroX: std_logic_vector(9 downto 0);
-	-- signal heroY: std_logic_vector(8 downto 0);  -- connect logic and renderer
+	signal heroX: std_logic_vector(9 downto 0) := "0000111111"; -- hardcode
+	signal heroY: std_logic_vector(8 downto 0) := "000111000";  -- connect logic and renderer
 
 	signal videoClock: std_logic;
 	signal sramClock: std_logic;
 	signal renderClock: std_logic;
 
-	-- signal logicReadAddress: std_logic_vector(16 downto 0);
-	-- signal logicReadReturn: std_logic_vector(8 downto 0);
+--	signal logicReadAddress: std_logic_vector(16 downto 0);
+--	signal logicReadReturn: std_logic_vector(8 downto 0);
 
 	signal rendererReadAddress: std_logic_vector(15 downto 0);
 	signal rendererReadReturn: std_logic_vector(8 downto 0);
@@ -126,7 +126,7 @@ begin
 
 	render: Renderer port map(
 		reset, renderClock,
-		-- heroX, heroY,
+		heroX, heroY,--"0000111111", "000111000", --hardcode heroX, heroY
 		rendererReadAddress, rendererReadReturn,
 		videoWriteAddress, videoWriteContent
 	);

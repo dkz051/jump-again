@@ -19,6 +19,6 @@ architecture logic of logicloop is
         success, death: out std_logic --whether crashing into brick, succeed, or die
         );
 	end component;
-
+	
 begin
 end architecture logic;
