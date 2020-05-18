@@ -47,6 +47,8 @@ begin
 			y_20 <= 0;
 			readFrom <= (others => '0');
 			writeTo <= (others => '0');
+			readFrom_x0 <= (others => '0');
+			cnt3_x0 <= 0;
 		elsif rising_edge(clock) then
 			if x < 640 and y < 480 then
 				if x = 639 and y = 479 then
@@ -88,7 +90,7 @@ begin
 					y_20 <= 0;
 				else
 					y <= y + 1;
-					if y_20 = 20 then
+					if y_20 = 19 then
 						y_20 <= 0;
 					else
 						y_20 <= y_20 + 1;
@@ -96,7 +98,7 @@ begin
 				end if;
 			else
 				x <= x + 1;
-				if x_20 = 20 then 
+				if x_20 = 19 then 
 					x_20 <= 0;
 				else 
 					x_20 <= x_20 + 1;
