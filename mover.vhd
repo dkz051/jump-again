@@ -38,14 +38,17 @@ begin
 			end if;
 			if counter_x = 9 then
 				counter_x <= 0;
-				equalX <= '0';
 				if keyLeft = '1' and keyRight = '0' then
+					equalX <= '0';
 					plusX <= '0';
 				elsif keyLeft = '0' and keyRight = '1' then
+					equalX <= '0';
 					plusX <= '1';
+				else 
+					equalX <= '1';
 				end if;
-				speed_y  <= speed_y - 2;
-				product <= product - time_accumu_y - time_accumu_y;
+				speed_y  <= speed_y - 3;
+				product <= product - time_accumu_y - time_accumu_y - time_accumu_y;
 			else
 				equalX <= '1';
 				counter_x <= counter_x + 1;
