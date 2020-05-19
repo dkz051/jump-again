@@ -33,8 +33,8 @@ begin
 			product <= 0;
 		elsif rising_edge(clk) then
 			if last_keyUp = '0' and keyUp = '1' then
-				speed_y <= 96;
-				product <= to_integer(shift_left(to_signed(time_accumu_y, 31), 5)  +  shift_left(to_signed(time_accumu_y, 31), 6));
+				speed_y <= 128;
+				product <= to_integer(shift_left(to_signed(time_accumu_y, 31), 7));
 			end if;
 			if counter_x = 9 then
 				counter_x <= 0;
@@ -47,8 +47,8 @@ begin
 				else 
 					equalX <= '1';
 				end if;
-				speed_y  <= speed_y - 3;
-				product <= product - time_accumu_y - time_accumu_y - time_accumu_y;
+				speed_y  <= speed_y - 5;
+				product <= product - time_accumu_y - to_integer(shift_left(to_signed(time_accumu_y, 31), 2));
 			else
 				equalX <= '1';
 				counter_x <= counter_x + 1;

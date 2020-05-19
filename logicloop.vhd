@@ -75,9 +75,13 @@ begin
 		elsif  rising_edge(clk2) then
 			if equalX = '0' then
 				if plusX = '1' then
+					if heroX < 619 then
 					heroX <= heroX + 1;
+					end if;
 				else 
-					heroX <= heroX - 1;
+					if heroX > 0 then
+						heroX <= heroX - 1;
+					end if;
 				end if;
 			end if;
 			
