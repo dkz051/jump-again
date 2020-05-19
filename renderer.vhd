@@ -128,9 +128,7 @@ begin
 		else
 			if x < 640 and y < 480 then -- inside the map
 			
-				if  heroX<x and heroY<y and  x < heroX + 20 and  y < heroY+ 20  then
-					writeData <= "000000111";
-				else
+				if  heroX > x or heroY > y or  x > heroX + 19 or  y > heroY + 19  then
 					case color_typ is
 					when "000" =>
 						writeData <= "111111111";
@@ -139,6 +137,8 @@ begin
 					when others => 
 						writeData <= "000111000";
 					end case;
+				else
+					writeData <= "000000111";
 				end if;
 			else
 				writeData <= (others => '0');

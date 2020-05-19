@@ -26,15 +26,32 @@ architecture logic of logicloop is
 --        success, death: out std_logic --whether crashing into brick, succeed, or die
 --        );
 --	end component;
+	component mover is
+		port(
+		-- x_t, y_t, s_t are all integer types
+		-- x_t, y_t for coordinate, s_t for speed
+		-- should we use higher resolution than 640*480 in computing?
+		-- not much overhead if x is 0 to 64000, y is 0 to 48000 when physics simulation?	
+		-- mover consider deltaX, deltaY (0 or 1), not absolute X, Y
+		clk, rst: in std_logic; -- clk is very important for this component!
+		keyLeft, keyUp, keyRight: in std_logic;
+		equalX, equalY, plusX, plusY: out std_logic  -- equalX: X+=0 plusX: X+=1(move right) plusY: Y+=1(move down)
+	    -- delta X, Y, need to be modified by crach checker
+	    ); -- when rst, set speed_y to 0, then free falling
+	end component;
 	signal heroX: std_logic_vector(9 downto 0);
 	signal heroY: std_logic_vector(8 downto 0);
 	signal clk_counter: integer;
 	signal clk2: std_logic; 
+	signal clk2_counter: integer;
+	signal x_counter: integer;
+	signal equalX, equalY, plusX, plusY: std_logic;
 begin
 
 	curX <= heroX;
 	curY <= heroY;
 	num_of_map <= 0;
+	move: mover port map(clk2, rst, keyLeft, keyRight, keyUp, equalX, equalY, plusX, plusY);
 	process(clk,rst)
 	begin
 		if rst = '0' then
@@ -42,26 +59,33 @@ begin
 			clk2 <= '0';
 		elsif rising_edge(clk) then
 			clk_counter <= clk_counter + 1;
-			if clk_counter = 1000000 then
-				clk2 <= not clk2; -- clk2: 50Hz
+			if clk_counter = 100000 then
+				clk2 <= not clk2; -- clk2: 500Hz the frequency is high, so that we move 1 pixel or 0 pixel in one cycle
+										-- mover: return direction: left/right/no movement?
+										-- simplify crash checker?(only 1 pixel)
 				clk_counter <= 0;
 			end if;
 		end if;
 	end process;
-	
 	process(rst, clk2)
 	begin
 		if rst = '0' then
 			heroX <= "0111000000";
 			heroY <= "011001111";
 		elsif  rising_edge(clk2) then
-			if keyLeft = '0' and keyRight = '1' then
-				if heroX < 620 then
+			if equalX = '0' then
+				if plusX = '1' then
 					heroX <= heroX + 1;
-				end if;
-			elsif keyLeft = '1' and keyRight = '0' then
-				if heroX > 0 then
+				else 
 					heroX <= heroX - 1;
+				end if;
+			end if;
+			
+			if equalY = '0' then
+				if plusY = '1' then
+					heroY <= heroY + 1;
+				else 
+					heroY <= heroY - 1;
 				end if;
 			end if;
 		end if;
