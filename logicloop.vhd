@@ -51,7 +51,7 @@ begin
 	curX <= heroX;
 	curY <= heroY;
 	num_of_map <= 0;
-	move: mover port map(clk2, rst, keyLeft, keyRight, keyUp, equalX, equalY, plusX, plusY);
+	move: mover port map(clk2, rst, keyLeft, keyUp, keyRight, equalX, equalY, plusX, plusY);
 	process(clk,rst)
 	begin
 		if rst = '0' then
