@@ -98,12 +98,12 @@ begin
 	process(rst, clk1)
 	begin
 		if rst = '0' then
-			heroX <= "0111000000";
-			heroY <= "011001111";
-			x_20 <= 8;
-			y_20 <= 7;
-			blockX <= 22;
-			blockY <= 10;
+			heroX <= "0000111100";
+			heroY <= "001100100";
+			x_20 <= 0;
+			y_20 <= 0;
+			blockX <= 3;
+			blockY <= 5;
 			flag <= 0;
 		elsif  rising_edge(clk1) then -- 8 state, check 4 block in order. 0 state: request the block type 1 state: get the block type and try to issue signal
 			case flag is 
