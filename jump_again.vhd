@@ -102,7 +102,10 @@ architecture jump of JumpAgain is
 		keyLeft,keyRight,keyUp: in std_logic; -- "keyboard input"
 		curX: out std_logic_vector(9 downto 0);
 		curY: out std_logic_vector(8 downto 0); -- place of hero
-		num_of_map: out integer -- which map?
+		num_of_map: out integer; -- which map?
+		mapReadAddress: out std_logic_vector(15 downto 0);
+		mapReadReturn: in std_logic_vector(8 downto 0)
+
 		-- if there's no moving parts other than hero, if the status of grid won't change, then,
 		-- (X,Y) of hero and number of map, is enough to send to VGA control module
 	    );
@@ -114,7 +117,7 @@ architecture jump of JumpAgain is
 	signal sramClock: std_logic;
 	signal renderClock: std_logic;
 
-	signal logicReadAddress: std_logic_vector(16 downto 0);
+	signal logicReadAddress: std_logic_vector(15 downto 0);
 	signal logicReadReturn: std_logic_vector(8 downto 0);
 
 	signal rendererReadAddress: std_logic_vector(15 downto 0);
@@ -141,8 +144,8 @@ begin
 		rendererReadAddress, rendererReadReturn,
 		videoWriteAddress, videoWriteContent
 	);
-	logic: logicloop port map(clock, reset, keyLeft, keyRight, keyUp, heroX, heroY, open);
+	logic: logicloop port map(clock, reset, keyLeft, keyRight, keyUp, heroX, heroY, open, logicReadAddress, logicReadReturn);
 	videoMemory: video_memory port map(videoReadAddress, videoWriteAddress, clock, (others => '0'), videoWriteContent, '0', '1', videoColorOutput, open);
 
-	dataMemory: data port map(rendererReadAddress, (others => '0'), clock, (others => '0'), (others => '0'), '0', '0', rendererReadReturn, open);
+	dataMemory: data port map(rendererReadAddress, logicReadAddress, clock, (others => '0'), (others => '0'), '0', '0', rendererReadReturn, logicReadReturn);
 end architecture jump;

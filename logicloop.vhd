@@ -13,7 +13,7 @@ entity logicloop is
 		curX: out std_logic_vector(9 downto 0);
 		curY: out std_logic_vector(8 downto 0);
 		num_of_map: out integer;  -- which map?
-		mapReadAddress: out std_logic_vector(16 downto 0);
+		mapReadAddress: out std_logic_vector(15 downto 0);
 		mapReadReturn: in std_logic_vector(8 downto 0)
 		-- if there's no moving parts other than hero, if the status of grid won't change, then,
 		-- (X,Y) of hero and number of map, is enough to send to VGA control module
@@ -41,7 +41,7 @@ architecture logic of logicloop is
 		port(
 			num_of_map: in integer;
 			clk: in std_logic;
-			mapReadAddress: out std_logic_vector(16 downto 0);
+			mapReadAddress: out std_logic_vector(15 downto 0);
 			mapReadReturn: in std_logic_vector(8 downto 0);
 			blockX, blockY: in integer;
 			block_type: out std_logic_vector(2 downto 0)
@@ -88,15 +88,19 @@ begin
 			if clk1_counter = 10000 then -- 5000 Hz! 
 				clk1 <= not clk1;
 				clk1_counter <= 0;
+			else
+				clk1_counter <= clk1_counter + 1;
 			end if;
+			
 			if clk2_counter = 100000 then
 				clk2 <= not clk2; -- clk2: 500Hz the frequency is high, so that we move 1 pixel or 0 pixel in one cycle
 										-- mover: return direction: left/right/no movement?
 										-- simplify crash checker?(only 1 pixel)
 				clk2_counter <= 0;
+			else
+				clk2_counter <= clk2_counter + 1;
 			end if;
-			clk1_counter <= clk1_counter + 1;
-			clk2_counter <= clk2_counter + 1;
+			
 		end if;
 	end process;
 	process(rst, clk1)
@@ -245,7 +249,7 @@ entity reader is -- put num_of_map, blockX, blockY in, get block_type out
 		port(
 			num_of_map: in integer;
 			clk: in std_logic;
-			mapReadAddress: out std_logic_vector(16 downto 0);
+			mapReadAddress: out std_logic_vector(15 downto 0);
 			mapReadReturn: in std_logic_vector(8 downto 0);
 			blockX, blockY: in integer;
 			block_type: out std_logic_vector(2 downto 0)
@@ -271,7 +275,7 @@ begin
 	process(block_num, addr)
 	begin
 		block_num_mod3 <= block_num - addr - addr - addr;
-		mapReadAddress <= std_logic_vector(addr(16 downto 0));
+		mapReadAddress <= std_logic_vector(addr(15 downto 0));
 	end process;
 	
 	process(mapReadReturn,block_num_mod3)
