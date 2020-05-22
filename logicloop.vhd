@@ -60,7 +60,7 @@ architecture logic of logicloop is
 	end component;
 	signal heroX: std_logic_vector(9 downto 0);
 	signal heroY: std_logic_vector(8 downto 0);
-	signal clk_counter: integer;
+	signal clk1_counter,clk2_counter: integer;
 	signal clk1: std_logic;
 	signal clk2: std_logic; 
 	signal equalX, equalY, plusX, plusY: std_logic;
@@ -80,19 +80,23 @@ begin
 	process(clk,rst)
 	begin
 		if rst = '0' then
-			clk_counter <= 0;
+			clk1_counter <= 0;
+			clk2_counter <= 0;
+			clk1 <= '0';
 			clk2 <= '0';
 		elsif rising_edge(clk) then
-			clk_counter <= clk_counter + 1;
-			if clk_counter = 10000 then -- 5000 Hz! 
+			if clk1_counter = 10000 then -- 5000 Hz! 
 				clk1 <= not clk1;
+				clk1_counter <= 0;
 			end if;
-			if clk_counter = 100000 then
+			if clk2_counter = 100000 then
 				clk2 <= not clk2; -- clk2: 500Hz the frequency is high, so that we move 1 pixel or 0 pixel in one cycle
 										-- mover: return direction: left/right/no movement?
 										-- simplify crash checker?(only 1 pixel)
-				clk_counter <= 0;
+				clk2_counter <= 0;
 			end if;
+			clk1_counter <= clk1_counter + 1;
+			clk2_counter <= clk2_counter + 1;
 		end if;
 	end process;
 	process(rst, clk1)
