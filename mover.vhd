@@ -12,7 +12,8 @@ entity mover is
 		-- not much overhead if x is 0 to 64000, y is 0 to 48000 when physics simulation?	
 		-- mover consider deltaX, deltaY (0 or 1), not absolute X, Y
 		clk, rst: in std_logic; -- clk is very important for this component
-		keyLeft, keyUp, keyRight: in std_logic;
+		keyLeft, keyUp, keyRight, crash_Y: in std_logic; -- delta_Y is ignored, consider equalY as '1', speed_Y set to 0
+		
 		equalX, equalY, plusX, plusY: out std_logic  -- equalX: X+=0 plusX: X+=1(move right) plusY: Y+=1(move down)
 	    -- delta X, Y, need to be modified by crach checker
 	    ); -- when rst, set speed_y to 0, then free falling
@@ -52,6 +53,10 @@ begin
 			else
 				equalX <= '1';
 				counter_x <= counter_x + 1;
+			end if;
+			if crash_Y = '1' then
+				speed_y <= 0;
+				product <= 0;
 			end if;
 			if product > 500 or product < -500 then
 				equalY <= '0';

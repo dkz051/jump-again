@@ -114,8 +114,8 @@ architecture jump of JumpAgain is
 	signal sramClock: std_logic;
 	signal renderClock: std_logic;
 
---	signal logicReadAddress: std_logic_vector(16 downto 0);
---	signal logicReadReturn: std_logic_vector(8 downto 0);
+	signal logicReadAddress: std_logic_vector(16 downto 0);
+	signal logicReadReturn: std_logic_vector(8 downto 0);
 
 	signal rendererReadAddress: std_logic_vector(15 downto 0);
 	signal rendererReadReturn: std_logic_vector(8 downto 0);
