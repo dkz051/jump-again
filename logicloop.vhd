@@ -63,7 +63,6 @@ architecture logic of logicloop is
 	signal clk_counter: integer;
 	signal clk1: std_logic;
 	signal clk2: std_logic; 
-	signal x_counter: integer;
 	signal equalX, equalY, plusX, plusY: std_logic;
 	signal crash_X, crash_Y: std_logic;
 	signal blockX, blockY: integer; -- X: 0 to 31 Y: 0 to 23 current place
@@ -101,6 +100,10 @@ begin
 		if rst = '0' then
 			heroX <= "0111000000";
 			heroY <= "011001111";
+			x_20 <= 8;
+			y_20 <= 7;
+			blockX <= 22;
+			blockY <= 10;
 			flag <= 0;
 		elsif  rising_edge(clk1) then -- 8 state, check 4 block in order. 0 state: request the block type 1 state: get the block type and try to issue signal
 			case flag is 
@@ -197,7 +200,7 @@ begin
 						end if;
 					end if;
 			when others => -- when 9
-					if equalY = '0' and not crash_Y = '0' then
+					if equalY = '0' and crash_Y = '0' then
 						if plusY = '1' then
 							if heroY < 459 then
 								heroY <= heroY + 1;
