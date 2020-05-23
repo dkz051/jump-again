@@ -118,11 +118,11 @@ begin
 			 when 0 => -- move X, crash upper block
 						--state 0, 1, 2: check if crash_X
 					crash_X <= '0';
-					if equalX = '0' then
-						if plusX = '1' and x_20 = 0 then -- move right problem: blockX - 1 < 0???? will wrong at edge
+					if equalX = '0' and x_20 = 0 then
+						if plusX = '1' then -- move right problem: blockX - 1 < 0???? will wrong at edge
 							queryX <= blockX + 1;
 							queryY <= blockY;
-						elsif plusX = '0' and x_20 = 0 then --move left
+						else  --move left
 							queryX <= blockX - 1;
 							queryY <= blockY;
 						end if;
@@ -138,7 +138,7 @@ begin
 						if plusX = '1'  then -- move right
 							queryX <= blockX + 1;
 							queryY <= blockY + 1;
-						elsif plusX = '0' then --move left
+						else --move left
 							queryX <= blockX - 1;
 							queryY <= blockY + 1;
 						end if;
@@ -180,7 +180,7 @@ begin
 						if plusY = '1' then -- move down
 							queryX <= blockX;
 							queryY <= blockY + 1;
-						elsif plusX = '0' then --move up
+						else --move up
 							queryX <= blockX;
 							queryY <= blockY - 1;
 						end if;
@@ -196,7 +196,7 @@ begin
 						if plusY = '1' then -- move down
 							queryX <= blockX + 1;
 							queryY <= blockY + 1;
-						elsif plusX = '0' then --move up
+						else --move up
 							queryX <= blockX + 1;
 							queryY <= blockY - 1;
 						end if;
