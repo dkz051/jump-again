@@ -35,6 +35,8 @@ architecture Render of Renderer is
 	signal readFrom_x0: std_logic_vector(15 downto 0) := (others => '0');
 	signal writeTo: std_logic_vector(13 downto 0) := (others => '0');
 	signal writeData: std_logic_vector(8 downto 0) := (others => '0');
+	signal lastData: std_logic_vector(2 downto 0); -- last data in a word, (2 downto 0)
+	signal firstData: std_logic_vector(2 downto 0); -- first data in a line
 begin
 	readAddress <= readFrom;
 	writeAddress <= writeTo;
@@ -52,6 +54,9 @@ begin
 			readFrom_x0 <= (others => '0');
 			cnt3_x0 <= 0;
 		elsif rising_edge(clock) then
+			if x = 700 then
+				lastData <= readOutput(2 downto 0);
+			end if;
 			if x < 640 and y < 480 then
 				if x = 639 and y = 479 then
 					readFrom_x0 <= (others => '0');
@@ -65,12 +70,15 @@ begin
 					end if;
 					if x_20 = 19 then
 						
-						if y_20 /= 19 and x = 639 then
-							readFrom <= readFrom_x0;
+						if y_20 /= 19 and x = 639 then -- wrap back one line
+							readFrom <= readFrom_x0; --  invisible region provide enough time here
 							cnt3 <= cnt3_x0;
-						else
-							if cnt3 = 2 then 
+						else -- y_20 = 19 or 
+							if cnt3 = 1 then 
+								lastData <= readOutput(2 downto 0);
 								readFrom <= readFrom +  1;
+								cnt3 <= cnt3 + 1;
+							elsif cnt3 = 2 then
 								cnt3 <= 0;
 							else	
 								cnt3 <= cnt3 + 1;
@@ -119,7 +127,7 @@ begin
 				when 1 =>
 					color_typ <= readOutput(5 downto 3);
 				when others =>
-					color_typ <= readOutput(2 downto 0);
+					color_typ <= lastData;
 		end case;
 	end process;
 ------------------------connnect render result and video memory
