@@ -72,6 +72,8 @@ architecture jump of JumpAgain is
 
 	component Renderer is
 		port(
+    		crash_block: in std_logic_vector(2 downto 0);
+
 			signal reset: in std_logic;
 			signal clock: in std_logic; -- 25 MHz clock
 
@@ -98,6 +100,7 @@ architecture jump of JumpAgain is
 	
 	component logicloop is
 		port(
+		crash_block: out std_logic_vector(2 downto 0);
 		clk,rst: in std_logic; -- we need clock
 		keyLeft,keyRight,keyUp: in std_logic; -- "keyboard input"
 		curX: out std_logic_vector(9 downto 0);
@@ -128,6 +131,8 @@ architecture jump of JumpAgain is
 
 	signal videoWriteAddress: std_logic_vector(13 downto 0);
 	signal videoWriteContent: std_logic_vector(8 downto 0);
+	
+	signal crash_block: std_logic_vector(2 downto 0);
 begin
 	control: KeyboardControl port map(ps2Data, ps2Clock, clock, reset, keyUp, keyDown, keyLeft, keyRight);
 
@@ -139,12 +144,13 @@ begin
 	vga: VgaController port map(reset, videoClock, vgaHs, vgaVs, vgaR, vgaG, vgaB, videoReadAddress, videoColorOutput);
 
 	render: Renderer port map(
+		crash_block,
 		reset, renderClock,
 		heroX, heroY,--"0000111111", "000111000", --hardcode heroX, heroY
 		rendererReadAddress, rendererReadReturn,
 		videoWriteAddress, videoWriteContent
 	);
-	logic: logicloop port map(clock, reset, keyLeft, keyRight, keyUp, heroX, heroY, open, logicReadAddress, logicReadReturn);
+	logic: logicloop port map(crash_block, clock, reset, keyLeft, keyRight, keyUp, heroX, heroY, open, logicReadAddress, logicReadReturn);
 	videoMemory: video_memory port map(videoReadAddress, videoWriteAddress, clock, (others => '0'), videoWriteContent, '0', '1', videoColorOutput, open);
 
 	dataMemory: data port map(rendererReadAddress, logicReadAddress, clock, (others => '0'), (others => '0'), '0', '0', rendererReadReturn, logicReadReturn);

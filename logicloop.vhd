@@ -8,6 +8,7 @@ use ieee.numeric_std.all;
 -- '0b10101010110'	
 entity logicloop is
 	port(
+		crash_block: out std_logic_vector(2 downto 0);
 		clk,rst: in std_logic; -- we need clock clk: 100 MHz
 		keyLeft,keyRight,keyUp: in std_logic; -- "keyboard input"
 		curX: out std_logic_vector(9 downto 0);
@@ -187,6 +188,7 @@ begin
 					end if;
 			when 6 =>
 					if equalY = '0' and y_20 = 0 then
+						crash_block <= ans_type;
 						if ans_type = "001" or ans_type = "010" then
 							crash_Y <= '1';
 						end if;
