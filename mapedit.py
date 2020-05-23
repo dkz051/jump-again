@@ -1,6 +1,6 @@
 from tkinter import *
 import time
-map_color = ['azure', 'slateblue1','SpringGreen']   #这个列表很重要, map_color里面有几种颜色, 格子就有几种类型, 目前有三种颜色
+map_color = ['azure', 'slateblue1','SpringGreen', 'gold']   #这个列表很重要, map_color里面有几种颜色, 格子就有几种类型, 目前有三种颜色
 #COLORS列表仅供参考, 告诉你有哪些颜色可以用
 COLORS = ['snow', 'ghost white', 'white smoke', 'gainsboro', 'floral white', 'old lace',
           'linen', 'antique white', 'papaya whip', 'blanched almond', 'bisque', 'peach puff',

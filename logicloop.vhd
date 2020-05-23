@@ -72,12 +72,14 @@ architecture logic of logicloop is
 	signal queryX,queryY: integer;
 	signal ans_type: std_logic_vector(2 downto 0);
 	signal buf_equalX, buf_equalY, buf_plusX, buf_plusY: std_logic;
+	signal numofmap: integer;
+	signal reload_map: std_logic;
 begin
 
 	curX <= heroX;
 	curY <= heroY;
-	num_of_map <= 0;
-	readmap: reader port map(0,clk, mapReadAddress,mapReadReturn,queryX,queryY,ans_type); -- pure combinational logic?
+	num_of_map <= numofmap;
+	readmap: reader port map(numofmap,clk, mapReadAddress,mapReadReturn,queryX,queryY,ans_type); 
 	move: mover port map(clk2, rst, keyLeft, keyUp, keyRight,crash_Y, equalX, equalY, plusX, plusY);
 	process(clk,rst)
 	begin
@@ -108,14 +110,26 @@ begin
 	process(rst, clk1)
 	begin
 		if rst = '0' then
-			heroX <= "0000111100";
-			heroY <= "001100100";
-			x_20 <= 0;
+			numofmap <= 0;
+			heroX <= "0000011110"; -- 30
+			heroY <= "110111000"; -- 440
+			x_20 <= 10;
 			y_20 <= 0;
-			blockX <= 3;
-			blockY <= 5;
+			blockX <= 1;
+			blockY <= 22;
 			flag <= 0;
+			reload_map <= '0';
 		elsif  rising_edge(clk1) then -- 8 state, check 4 block in order. 0 state: request the block type 1 state: get the block type and try to issue signal
+			if reload_map = '1' then
+				flag <= 0;
+				heroX <= "0000011110"; -- 30
+				heroY <= "110111000"; -- 440
+				x_20 <= 10;
+				y_20 <= 0;
+				blockX <= 1;
+				blockY <= 22;
+				reload_map <= '0';
+			else
 			case flag is 
 			 when 0 => -- move X, crash upper block
 						--state 0, 1, 2: check if crash_X
@@ -131,9 +145,17 @@ begin
 					end if;
 			 when 1 =>
 				if x_20 = 0 then
-					if ans_type = "001" or ans_type = "010" then
-						crash_X <= '1';
-					end if;
+					case ans_type is
+						when "001" => --brick
+							crash_X <= '1';
+						when "010" => --death
+							reload_map <= '1';
+							-- numofmap <= numofmap;
+						when "011" => -- success, next map
+							reload_map <= '1';
+							numofmap <= numofmap + 1;
+						when others =>
+						end case;
 				end if;
 			 when 2 => -- move X, crash lower block
 						if buf_plusX = '1'  then -- move right
@@ -145,9 +167,17 @@ begin
 						end if;
 			when 3 => -- moveX ?
 					if x_20 = 0 and y_20 /= 0 then
-						if ans_type = "001" or ans_type = "010" then
+						case ans_type is
+						when "001" =>
 							crash_X <= '1';
-						end if;
+						when "010" =>
+							reload_map <= '1';
+							-- numofmap <= numofmap;
+						when "011" => -- success, next map
+							reload_map <= '1';
+							numofmap <= numofmap + 1;
+						when others =>
+						end case;
 					end if;
 			when 4 =>
 				if buf_equalX = '0' and crash_X = '0' then
@@ -189,10 +219,17 @@ begin
 					end if;
 			when 6 =>
 					if y_20 = 0 then
-					--	crash_block <= ans_type;
-						if ans_type = "001" or ans_type = "010" then
+					case ans_type is
+						when "001" =>
 							crash_Y <= '1';
-						end if;
+						when "010" =>
+							reload_map <= '1';
+							-- numofmap <= numofmap;
+						when "011" => -- success, next map
+							reload_map <= '1';
+							numofmap <= numofmap + 1;
+						when others =>
+						end case;
 					end if;
 			when 7 =>
 					if y_20 = 0 then
@@ -206,9 +243,17 @@ begin
 					end if;
 			when 8 =>
 					if y_20 = 0 and x_20 /= 0 then
-						if ans_type = "001" or ans_type = "010" then
-							crash_Y <= '1';
-						end if;
+							case ans_type is
+							when "001" =>
+								crash_Y <= '1';
+							when "010" =>
+								reload_map <= '1';
+								-- numofmap <= numofmap;
+							when "011" => -- success, next map
+								reload_map <= '1';
+								numofmap <= numofmap + 1;
+							when others =>
+							end case;
 					end if;
 			when others => -- when 9
 					if buf_equalY = '0' and crash_Y = '0' then
@@ -217,7 +262,11 @@ begin
 								heroY <= heroY + 1;
 								if y_20 = 19 then
 									y_20 <= 0;
+									if blockY = 22 then -- bottom death
+										reload_map <= '1';
+									end if;
 									blockY <= blockY + 1;
+									
 								else 
 									y_20 <= y_20 + 1;
 								end if;
@@ -234,12 +283,12 @@ begin
 							end if;
 						end if;
 					end if;
-			end case;
-			
+			end case;				
 			if flag = 9 then
 				flag <= 0;
 			else 
 				flag <= flag + 1;
+			end if;
 			end if;
 		end if;
 	end process;

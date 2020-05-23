@@ -7,7 +7,7 @@ use ieee.numeric_std.all;
 entity Renderer is
 	port(
 	--	crash_block: in std_logic_vector(2 downto 0);
-
+		signal num_of_map: in integer;
 		signal reset: in std_logic;
 		signal clock: in std_logic; -- 25 MHz clock
 
@@ -49,9 +49,9 @@ begin
 			y <= (others => '0');
 			x_20 <= 0;
 			y_20 <= 0;
-			readFrom <= (others => '0');
+			readFrom <= std_logic_vector(to_unsigned(num_of_map * 256, 16));
 			writeTo <= (others => '0');
-			readFrom_x0 <= (others => '0');
+			readFrom_x0 <= std_logic_vector(to_unsigned(num_of_map * 256, 16));
 			cnt3_x0 <= 0;
 		elsif rising_edge(clock) then
 			if x = 700 then
@@ -59,9 +59,9 @@ begin
 			end if;
 			if x < 640 and y < 480 then
 				if x = 639 and y = 479 then
-					readFrom_x0 <= (others => '0');
+					readFrom_x0 <= std_logic_vector(to_unsigned(num_of_map * 256, 16));
 					cnt3_x0 <= 0;
-					readFrom <= (others => '0');
+					readFrom <= std_logic_vector(to_unsigned(num_of_map * 256, 16));
 					cnt3 <= 0;
 				else
 					if x = 0 then
@@ -151,12 +151,16 @@ begin
 			--	else
 					if  heroX > x or heroY > y or  x > heroX + 19 or  y > heroY + 19  then
 						case color_typ is
-						when "000" =>
+						when "000" => -- air
 							writeData <= "111111111";
-						when "001" =>
+						when "001" => -- brick
 							writedata <= "111000000";
-						when others => 
+						when "010" => -- trap
 							writeData <= "000111000";
+						when "011" => -- destination
+							writeData <= "111111000";
+						when others =>
+							writeData <= "000000000";
 						end case;
 					else
 						writeData <= "000000111";

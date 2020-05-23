@@ -73,7 +73,7 @@ architecture jump of JumpAgain is
 	component Renderer is
 		port(
     --		crash_block: in std_logic_vector(2 downto 0);
-
+			signal num_of_map: in integer;
 			signal reset: in std_logic;
 			signal clock: in std_logic; -- 25 MHz clock
 
@@ -132,6 +132,7 @@ architecture jump of JumpAgain is
 	signal videoWriteAddress: std_logic_vector(13 downto 0);
 	signal videoWriteContent: std_logic_vector(8 downto 0);
 	
+	signal num_of_map: integer;
 	--signal crash_block: std_logic_vector(2 downto 0);
 begin
 	control: KeyboardControl port map(ps2Data, ps2Clock, clock, reset, keyUp, keyDown, keyLeft, keyRight);
@@ -145,12 +146,13 @@ begin
 
 	render: Renderer port map(
 	--	crash_block,
+		num_of_map,
 		reset, renderClock,
 		heroX, heroY,--"0000111111", "000111000", --hardcode heroX, heroY
 		rendererReadAddress, rendererReadReturn,
 		videoWriteAddress, videoWriteContent
 	);
-	logic: logicloop port map(clock, reset, keyLeft, keyRight, keyUp, heroX, heroY, open, logicReadAddress, logicReadReturn);
+	logic: logicloop port map(clock, reset, keyLeft, keyRight, keyUp, heroX, heroY, num_of_map, logicReadAddress, logicReadReturn);
 	videoMemory: video_memory port map(videoReadAddress, videoWriteAddress, clock, (others => '0'), videoWriteContent, '0', '1', videoColorOutput, open);
 
 	dataMemory: data port map(rendererReadAddress, logicReadAddress, clock, (others => '0'), (others => '0'), '0', '0', rendererReadReturn, logicReadReturn);
