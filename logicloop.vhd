@@ -71,6 +71,7 @@ architecture logic of logicloop is
 	signal flag: integer;
 	signal queryX,queryY: integer;
 	signal ans_type: std_logic_vector(2 downto 0);
+	signal buf_equalX, buf_equalY, buf_plusX, buf_plusY: std_logic;
 begin
 
 	curX <= heroX;
@@ -119,6 +120,8 @@ begin
 			 when 0 => -- move X, crash upper block
 						--state 0, 1, 2: check if crash_X
 					crash_X <= '0';
+					buf_plusX <= plusX;
+					buf_equalX <= equalX;
 					if plusX = '1' then -- move right problem: blockX - 1 < 0???? will wrong at edge
 						queryX <= blockX + 1;
 						queryY <= blockY;
@@ -133,7 +136,7 @@ begin
 					end if;
 				end if;
 			 when 2 => -- move X, crash lower block
-						if plusX = '1'  then -- move right
+						if buf_plusX = '1'  then -- move right
 							queryX <= blockX + 1;
 							queryY <= blockY + 1;
 						else --move left
@@ -147,8 +150,8 @@ begin
 						end if;
 					end if;
 			when 4 =>
-				if equalX = '0' and crash_X = '0' then
-						if plusX = '1' then
+				if buf_equalX = '0' and crash_X = '0' then
+						if buf_plusX = '1' then
 							if heroX < 619 then
 							-- try heroX <= heroX + 1; maybe crash?
 								heroX <= heroX + 1;
@@ -173,6 +176,8 @@ begin
 					end if;
 			when 5 =>
 					crash_Y <= '0';
+					buf_equalY <= equalY;
+					buf_plusY <= plusY;
 					if y_20 = 0 then
 						if plusY = '1' then -- move down
 							queryX <= blockX;
@@ -191,7 +196,7 @@ begin
 					end if;
 			when 7 =>
 					if y_20 = 0 then
-						if plusY = '1' then -- move down
+						if buf_plusY = '1' then -- move down
 							queryX <= blockX + 1;
 							queryY <= blockY + 1;
 						else --move up
@@ -206,8 +211,8 @@ begin
 						end if;
 					end if;
 			when others => -- when 9
-					if equalY = '0' and crash_Y = '0' then
-						if plusY = '1' then
+					if buf_equalY = '0' and crash_Y = '0' then
+						if buf_plusY = '1' then
 							if heroY < 459 then
 								heroY <= heroY + 1;
 								if y_20 = 19 then
