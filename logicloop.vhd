@@ -119,23 +119,20 @@ begin
 			 when 0 => -- move X, crash upper block
 						--state 0, 1, 2: check if crash_X
 					crash_X <= '0';
-					if equalX = '0' and x_20 = 0 then
-						if plusX = '1' then -- move right problem: blockX - 1 < 0???? will wrong at edge
-							queryX <= blockX + 1;
-							queryY <= blockY;
-						else  --move left
-							queryX <= blockX - 1;
-							queryY <= blockY;
-						end if;
+					if plusX = '1' then -- move right problem: blockX - 1 < 0???? will wrong at edge
+						queryX <= blockX + 1;
+						queryY <= blockY;
+					else  --move left
+						queryX <= blockX - 1;
+						queryY <= blockY;
 					end if;
 			 when 1 =>
-				if equalX = '0' and x_20 = 0 then
+				if x_20 = 0 then
 					if ans_type = "001" or ans_type = "010" then
 						crash_X <= '1';
 					end if;
 				end if;
 			 when 2 => -- move X, crash lower block
-					if equalX = '0' and x_20 = 0 then
 						if plusX = '1'  then -- move right
 							queryX <= blockX + 1;
 							queryY <= blockY + 1;
@@ -143,9 +140,8 @@ begin
 							queryX <= blockX - 1;
 							queryY <= blockY + 1;
 						end if;
-					end if;
 			when 3 => -- moveX ?
-					if equalX = '0' and x_20 = 0 and y_20 /= 0 then
+					if x_20 = 0 and y_20 /= 0 then
 						if ans_type = "001" or ans_type = "010" then
 							crash_X <= '1';
 						end if;
@@ -177,7 +173,7 @@ begin
 					end if;
 			when 5 =>
 					crash_Y <= '0';
-					if equalY = '0' and y_20 = 0 then
+					if y_20 = 0 then
 						if plusY = '1' then -- move down
 							queryX <= blockX;
 							queryY <= blockY + 1;
@@ -187,14 +183,14 @@ begin
 						end if;
 					end if;
 			when 6 =>
-					if equalY = '0' and y_20 = 0 then
+					if y_20 = 0 then
 						crash_block <= ans_type;
 						if ans_type = "001" or ans_type = "010" then
 							crash_Y <= '1';
 						end if;
 					end if;
 			when 7 =>
-					if equalY = '0' and y_20 = 0 then
+					if y_20 = 0 then
 						if plusY = '1' then -- move down
 							queryX <= blockX + 1;
 							queryY <= blockY + 1;
@@ -204,7 +200,7 @@ begin
 						end if;
 					end if;
 			when 8 =>
-					if equalY = '0' and y_20 = 0 and x_20 /= 0 then
+					if y_20 = 0 and x_20 /= 0 then
 						if ans_type = "001" or ans_type = "010" then
 							crash_Y <= '1';
 						end if;

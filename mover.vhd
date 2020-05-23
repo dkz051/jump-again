@@ -57,6 +57,7 @@ begin
 			if crash_Y = '1' then
 				speed_y <= 0;
 				product <= 0;
+				time_accumu_y <= 0;
 			end if;
 			if product > 500 or product < -500 then
 				equalY <= '0';
