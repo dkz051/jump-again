@@ -144,7 +144,7 @@ begin
 						end if;
 					end if;
 			when 3 => -- moveX ?
-					if equalX = '0' and x_20 = 0 then
+					if equalX = '0' and x_20 = 0 and y_20 /= 0 then
 						if ans_type = "001" or ans_type = "010" then
 							crash_X <= '1';
 						end if;
@@ -202,7 +202,7 @@ begin
 						end if;
 					end if;
 			when 8 =>
-					if equalY = '0' and y_20 = 0 then
+					if equalY = '0' and y_20 = 0 and x_20 /= 0 then
 						if ans_type = "001" or ans_type = "010" then
 							crash_Y <= '1';
 						end if;
