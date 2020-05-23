@@ -6,7 +6,7 @@ use ieee.numeric_std.all;
 
 entity Renderer is
 	port(
-		crash_block: in std_logic_vector(2 downto 0);
+	--	crash_block: in std_logic_vector(2 downto 0);
 
 		signal reset: in std_logic;
 		signal clock: in std_logic; -- 25 MHz clock
@@ -129,18 +129,18 @@ begin
 			writeData <= (others => '0');
 		else
 			if x < 640 and y < 480 then -- inside the map
-				if x < 20 and y < 20 then
-					case crash_block is
-						when "000" =>
-							writeData <= "111111111";
-						when "001" =>
-							writedata <= "111000000";
-						when "010" => 
-							writeData <= "000111000";
-						when others =>
-							writeData <= "000111111";
-					end case;
-				else
+			---	if x < 20 and y < 20 then
+			--		case crash_block is
+			--			when "000" =>
+			--				writeData <= "111111111";
+			--			when "001" =>
+			--				writedata <= "111000000";
+			--			when "010" => 
+			--				writeData <= "000111000";
+			--			when others =>
+			--				writeData <= "000111111";
+			--		end case;
+			--	else
 					if  heroX > x or heroY > y or  x > heroX + 19 or  y > heroY + 19  then
 						case color_typ is
 						when "000" =>
@@ -153,7 +153,7 @@ begin
 					else
 						writeData <= "000000111";
 					end if;
-				end if;
+			--	end if;
 			else
 				writeData <= (others => '0');
 			end if;
