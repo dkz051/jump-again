@@ -123,7 +123,7 @@ begin
 		end case;
 	end process;
 ------------------------connnect render result and video memory
-	process(reset,x,color_typ)
+	process(reset,color_typ)
 	begin
 		if reset = '0' then
 			writeData <= (others => '0');
