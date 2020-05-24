@@ -47,7 +47,7 @@ set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
 set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
 set_global_assignment -name DEVICE_FILTER_PIN_COUNT 672
 set_global_assignment -name ERROR_CHECK_FREQUENCY_DIVISOR 1
-set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+set_global_assignment -name PARTITION_NETLIST_TYPE POST_FIT -section_id Top
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
 set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 set_global_assignment -name STRATIX_DEVICE_IO_STANDARD "3.3-V LVTTL"
@@ -78,61 +78,6 @@ set_global_assignment -name ENABLE_SIGNALTAP OFF
 set_global_assignment -name USE_SIGNALTAP_FILE JumpAgain.stp
 set_global_assignment -name TIMEQUEST_REPORT_SCRIPT_INCLUDE_DEFAULT_ANALYSIS OFF
 set_global_assignment -name TIMEQUEST_DO_CCPP_REMOVAL OFF
-set_location_assignment PIN_AE23 -to sramAddress[19]
-set_location_assignment PIN_AF23 -to sramAddress[18]
-set_location_assignment PIN_Y23 -to sramAddress[17]
-set_location_assignment PIN_Y24 -to sramAddress[16]
-set_location_assignment PIN_AA25 -to sramAddress[15]
-set_location_assignment PIN_AA26 -to sramAddress[14]
-set_location_assignment PIN_V22 -to sramAddress[13]
-set_location_assignment PIN_AB26 -to sramAddress[12]
-set_location_assignment PIN_AB25 -to sramAddress[11]
-set_location_assignment PIN_AB23 -to sramAddress[10]
-set_location_assignment PIN_AB24 -to sramAddress[9]
-set_location_assignment PIN_AA23 -to sramAddress[8]
-set_location_assignment PIN_AA24 -to sramAddress[7]
-set_location_assignment PIN_Y22 -to sramAddress[6]
-set_location_assignment PIN_AC24 -to sramAddress[5]
-set_location_assignment PIN_AD24 -to sramAddress[4]
-set_location_assignment PIN_AC26 -to sramAddress[3]
-set_location_assignment PIN_AC23 -to sramAddress[2]
-set_location_assignment PIN_N23 -to sramAddress[1]
-set_location_assignment PIN_N24 -to sramAddress[0]
-set_location_assignment PIN_K26 -to sramNotCs
-set_location_assignment PIN_AD25 -to sramNotOe
-set_location_assignment PIN_AC25 -to sramNotWe
-set_location_assignment PIN_M25 -to sramData[31]
-set_location_assignment PIN_M24 -to sramData[30]
-set_location_assignment PIN_M23 -to sramData[29]
-set_location_assignment PIN_M22 -to sramData[28]
-set_location_assignment PIN_K23 -to sramData[27]
-set_location_assignment PIN_K22 -to sramData[26]
-set_location_assignment PIN_K24 -to sramData[25]
-set_location_assignment PIN_L23 -to sramData[24]
-set_location_assignment PIN_L24 -to sramData[23]
-set_location_assignment PIN_P23 -to sramData[22]
-set_location_assignment PIN_P24 -to sramData[21]
-set_location_assignment PIN_R25 -to sramData[20]
-set_location_assignment PIN_R24 -to sramData[19]
-set_location_assignment PIN_T22 -to sramData[18]
-set_location_assignment PIN_T23 -to sramData[17]
-set_location_assignment PIN_T24 -to sramData[16]
-set_location_assignment PIN_T25 -to sramData[15]
-set_location_assignment PIN_U26 -to sramData[14]
-set_location_assignment PIN_U25 -to sramData[13]
-set_location_assignment PIN_U23 -to sramData[12]
-set_location_assignment PIN_U24 -to sramData[11]
-set_location_assignment PIN_V26 -to sramData[10]
-set_location_assignment PIN_V25 -to sramData[9]
-set_location_assignment PIN_V24 -to sramData[8]
-set_location_assignment PIN_V23 -to sramData[7]
-set_location_assignment PIN_W26 -to sramData[6]
-set_location_assignment PIN_W25 -to sramData[5]
-set_location_assignment PIN_W23 -to sramData[4]
-set_location_assignment PIN_W24 -to sramData[3]
-set_location_assignment PIN_U22 -to sramData[2]
-set_location_assignment PIN_Y25 -to sramData[1]
-set_location_assignment PIN_Y26 -to sramData[0]
 
 set_global_assignment -name VHDL_FILE logicloop.vhd
 set_global_assignment -name VHDL_FILE pll.vhd
@@ -153,4 +98,18 @@ set_global_assignment -name QIP_FILE data.qip
 set_global_assignment -name QIP_FILE pll.qip
 set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
 set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
+set_location_assignment PIN_C19 -to rx
+set_location_assignment PIN_AC7 -to kRight
+set_location_assignment PIN_AB8 -to sRight
+set_location_assignment PIN_AB10 -to right
+set_location_assignment PIN_AE7 -to kLeft
+set_location_assignment PIN_AF7 -to sLeft
+set_location_assignment PIN_AE9 -to left
+set_location_assignment PIN_AF9 -to kDown
+set_location_assignment PIN_AD10 -to sDown
+set_location_assignment PIN_AD15 -to down
+set_location_assignment PIN_AE11 -to kUp
+set_location_assignment PIN_AC15 -to sUp
+set_location_assignment PIN_AE15 -to up
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
+set_global_assignment -name SLD_FILE "C:/Users/Chrogeek/Documents/Development/Projects/jump-again/JumpAgain_auto_stripped.stp"
