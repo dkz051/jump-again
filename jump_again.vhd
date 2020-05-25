@@ -8,12 +8,18 @@ entity JumpAgain is -- top entity
 		ps2Data, ps2Clock: in std_logic;
 		clock, reset: in std_logic;
 
+		rx: in std_logic;
+
 		vgaHs, vgaVs: out std_logic;
 		vgaR, vgaG, vgaB: out std_logic_vector(2 downto 0);
 
-		sramAddress: out std_logic_vector(19 downto 0);
-		sramData: inout std_logic_vector(31 downto 0);
-		sramNotWe, sramNotOe, sramNotCs: out std_logic
+		-- sramAddress: out std_logic_vector(19 downto 0);
+		-- sramData: inout std_logic_vector(31 downto 0);
+		-- sramNotWe, sramNotOe, sramNotCs: out std_logic;
+
+		kUp, kDown, kLeft, kRight: out std_logic;
+		sUp, sDown, sLeft, sRight: out std_logic;
+		up, down, left, right: out std_logic
 	);
 end entity JumpAgain;
 
@@ -29,6 +35,15 @@ architecture jump of JumpAgain is
 			keyRight: out std_logic := '0'
 		);
 	end component KeyboardControl;
+
+	component Sensor is
+		port(
+			clock: in std_logic; -- 100 MHz clock input
+			reset: in std_logic;
+			rx: in std_logic;
+			up, down, left, right: out std_logic
+		);
+	end component;
 
 	component VgaController is
 		port(
@@ -72,13 +87,13 @@ architecture jump of JumpAgain is
 
 	component Renderer is
 		port(
-    --		crash_block: in std_logic_vector(2 downto 0);
+			-- crash_block: in std_logic_vector(2 downto 0);
 			signal num_of_map: in integer;
 			signal reset: in std_logic;
 			signal clock: in std_logic; -- 25 MHz clock
 
 			signal heroX: in std_logic_vector(9 downto 0);
-		   signal heroY: in std_logic_vector(8 downto 0);
+			signal heroY: in std_logic_vector(8 downto 0);
 
 			signal readAddress: out std_logic_vector(15 downto 0);
 			signal readOutput: in std_logic_vector(8 downto 0);
@@ -97,7 +112,7 @@ architecture jump of JumpAgain is
 			locked: out std_logic
 		);
 	end component;
-	
+
 	component logicloop is
 		port(
 		--crash_block: out std_logic_vector(2 downto 0);
@@ -114,8 +129,11 @@ architecture jump of JumpAgain is
 	    );
 	end component logicloop;
 	signal heroX: std_logic_vector(9 downto 0); -- hardcode
-	signal heroY: std_logic_vector(8 downto 0);  -- connect logic and renderer
+	signal heroY: std_logic_vector(8 downto 0); -- connect logic and renderer
+
 	signal keyUp, keyDown, keyLeft, keyRight: std_logic;
+	signal sensorUp, sensorDown, sensorLeft, sensorRight: std_logic;
+
 	signal videoClock: std_logic;
 	signal sramClock: std_logic;
 	signal renderClock: std_logic;
@@ -131,11 +149,27 @@ architecture jump of JumpAgain is
 
 	signal videoWriteAddress: std_logic_vector(13 downto 0);
 	signal videoWriteContent: std_logic_vector(8 downto 0);
-	
+
 	signal num_of_map: integer;
 	--signal crash_block: std_logic_vector(2 downto 0);
 begin
-	control: KeyboardControl port map(ps2Data, ps2Clock, clock, reset, keyUp, keyDown, keyLeft, keyRight);
+	keyboard: KeyboardControl port map(ps2Data, ps2Clock, clock, reset, keyUp, keyDown, keyLeft, keyRight);
+	arduino: Sensor port map(clock, reset, rx, sensorUp, sensorDown, sensorLeft, sensorRight);
+
+	up <= keyUp or sensorUp;
+	down <= keyDown or sensorDown;
+	left <= keyLeft or sensorLeft;
+	right <= keyRight or sensorRight;
+
+	kUp <= keyUp;
+	kDown <= keyDown;
+	kLeft <= keyLeft;
+	kRight <= keyRight;
+
+	sUp <= sensorUp;
+	sDown <= sensorDown;
+	sLeft <= sensorLeft;
+	sRight <= sensorRight;
 
 	pllClock: pll port map(not reset, clock, videoClock, sramClock, open);
 
