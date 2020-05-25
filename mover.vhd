@@ -1,24 +1,24 @@
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all; 
+use ieee.numeric_std.all;
 entity mover is
-	-- mover don't care about grid crash 
-	-- mover cares about "keyboard" input and "gravity" 
+	-- mover don't care about grid crash
+	-- mover cares about "keyboard" input and "gravity"
 	-- y speed is variable, x speed is not variable
 	port(
 		-- x_t, y_t, s_t are all integer types
 		-- x_t, y_t for coordinate, s_t for speed
 		-- should we use higher resolution than 640*480 in computing?
-		-- not much overhead if x is 0 to 64000, y is 0 to 48000 when physics simulation?	
+		-- not much overhead if x is 0 to 64000, y is 0 to 48000 when physics simulation?
 		-- mover consider deltaX, deltaY (0 or 1), not absolute X, Y
 		clk, rst: in std_logic; -- clk is very important for this component
 		keyLeft, keyUp, keyRight, crash_Y, crash_down: in std_logic; -- delta_Y is ignored, consider equalY as '1', speed_Y set to 0
-		
+
 		equalX, equalY, plusX, plusY: out std_logic  -- equalX: X+=0 plusX: X+=1(move right) plusY: Y+=1(move down)
 	    -- delta X, Y, need to be modified by crach checker
 	    ); -- when rst, set speed_y to 0, then free falling
 end entity;
-architecture move of mover is 
+architecture move of mover is
 signal counter_x: integer; -- 50 pixel / second
 signal time_accumu_y: integer;
 signal speed_y: integer;
@@ -41,7 +41,7 @@ begin
 				if canjump2 = '1' then
 					canjump2 <= canjump1;
 					canjump1 <= '0';
-					speed_y <= 128;
+					speed_y <= 224;
 					product <= to_integer(shift_left(to_signed(time_accumu_y, 31), 7));
 				end if;
 			end if;
@@ -53,10 +53,10 @@ begin
 				elsif keyLeft = '0' and keyRight = '1' then
 					equalX <= '0';
 					plusX <= '1';
-				else 
+				else
 					equalX <= '1';
 				end if;
-				speed_y  <= speed_y - 5;
+				speed_y  <= speed_y - 8;
 				product <= product - time_accumu_y - to_integer(shift_left(to_signed(time_accumu_y, 31), 2));
 			else
 				equalX <= '1';
@@ -77,7 +77,7 @@ begin
 				equalY <= '0';
 				time_accumu_y <= 0;
 				product <= 0;
-				
+
 				if product > 500 then -- positive speed, move up
 					plusY <= '0';
 					buf_plusY <= '0';
@@ -85,7 +85,7 @@ begin
 					plusY <= '1';
 					buf_plusY <= '1';
 				end if;
-				
+
 			else
 				equalY <= '1';
 				time_accumu_y <= time_accumu_y + 1;

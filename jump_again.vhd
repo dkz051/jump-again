@@ -186,7 +186,7 @@ begin
 		rendererReadAddress, rendererReadReturn,
 		videoWriteAddress, videoWriteContent
 	);
-	logic: logicloop port map(clock, reset, keyLeft, keyRight, keyUp, heroX, heroY, num_of_map, logicReadAddress, logicReadReturn);
+	logic: logicloop port map(clock, reset, keyLeft or sensorLeft, keyRight or sensorRight, keyUp or sensorUp, heroX, heroY, num_of_map, logicReadAddress, logicReadReturn);
 	videoMemory: video_memory port map(videoReadAddress, videoWriteAddress, clock, (others => '0'), videoWriteContent, '0', '1', videoColorOutput, open);
 
 	dataMemory: data port map(rendererReadAddress, logicReadAddress, clock, (others => '0'), (others => '0'), '0', '0', rendererReadReturn, logicReadReturn);
