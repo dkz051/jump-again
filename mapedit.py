@@ -148,7 +148,7 @@ cv.pack()
 cv.bind("<Button-1>", xFunc1) 
 cv.bind("<B1-Motion>", xFunc2)
 #name = "" #如果你想加载现有地图文件, 就把name改成地图文件的路径
-name = "map0.txt"
+name = "map3.txt"
 if name != "":
     load_map(cv, name)
 win.mainloop()

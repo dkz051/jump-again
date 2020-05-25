@@ -52,7 +52,7 @@ architecture logic of logicloop is
 		port(
 		-- mover consider deltaX, deltaY (0 or 1), not absolute X, Y
 		clk, rst: in std_logic; -- clk is very important for this component!
-		keyLeft, keyUp, keyRight,crash_Y: in std_logic;
+		keyLeft, keyUp, keyRight,crash_Y, crash_down: in std_logic;
 		--crash_Y: in std_logic; -- crash into brick in y direction, delta Y is not applied to heroY, set speed_y to 0
 		equalX, equalY, plusX, plusY: out std_logic  -- equalX: X+=0 plusX: X+=1(move right) plusY: Y+=1(move down)
 		-- only when delta X, Y makes hero "rush into" brick, we consider it as "crashed". 
@@ -66,6 +66,7 @@ architecture logic of logicloop is
 	signal clk2: std_logic; 
 	signal equalX, equalY, plusX, plusY: std_logic;
 	signal crash_X, crash_Y: std_logic;
+	signal crash_down: std_logic;
 	signal blockX, blockY: integer; -- X: 0 to 31 Y: 0 to 23 current place
 	signal x_20, y_20: integer; -- 0 to 19
 	signal flag: integer;
@@ -80,7 +81,7 @@ begin
 	curY <= heroY;
 	num_of_map <= numofmap;
 	readmap: reader port map(numofmap,clk, mapReadAddress,mapReadReturn,queryX,queryY,ans_type); 
-	move: mover port map(clk2, rst, keyLeft, keyUp, keyRight,crash_Y, equalX, equalY, plusX, plusY);
+	move: mover port map(clk2, rst, keyLeft, keyUp, keyRight,crash_Y,crash_down, equalX, equalY, plusX, plusY);
 	process(clk,rst)
 	begin
 		if rst = '0' then
@@ -222,6 +223,7 @@ begin
 					case ans_type is
 						when "001" =>
 							crash_Y <= '1';
+							crash_down <= buf_plusY;
 						when "010" =>
 							reload_map <= '1';
 							-- numofmap <= numofmap;
@@ -246,6 +248,7 @@ begin
 							case ans_type is
 							when "001" =>
 								crash_Y <= '1';
+								crash_down <= buf_plusY;
 							when "010" =>
 								reload_map <= '1';
 								-- numofmap <= numofmap;
