@@ -26,6 +26,7 @@ signal product: integer;  -- speed_y * time_accumu_y
 signal last_keyUp: std_logic;
 signal buf_plusY: std_logic;
 signal canjump1,canjump2: std_logic;
+signal reverse_g: std_logic;
 begin
 	process(clk,rst) is  -- 500Hz
 	begin
@@ -36,6 +37,7 @@ begin
 			product <= 0;
 			canjump1 <= '1';
 			canjump2 <= '1';
+			reverse_g <= '1';
 		elsif rising_edge(clk) then
 			if last_keyUp = '0' and keyUp = '1' then
 				if canjump2 = '1' then
@@ -79,11 +81,11 @@ begin
 				product <= 0;
 				
 				if product > 500 then -- positive speed, move up
-					plusY <= '0';
-					buf_plusY <= '0';
+					plusY <= reverse_g;
+					buf_plusY <= reverse_g;
 				else
-					plusY <= '1';
-					buf_plusY <= '1';
+					plusY <= not reverse_g;
+					buf_plusY <= not reverse_g;
 				end if;
 				
 			else
