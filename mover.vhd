@@ -44,8 +44,15 @@ begin
 				if canjump2 = '1' then
 					canjump2 <= canjump1;
 					canjump1 <= '0';
-					speed_y <= 224;
-					product <= to_integer(shift_left(to_signed(time_accumu_y, 31), 7));
+					if reverse_g = '0' then
+						speed_y <= 224;
+						product <= to_integer(shift_left(to_signed(time_accumu_y, 31), 7));
+
+					else
+						speed_y <= -224;
+						product <= -to_integer(shift_left(to_signed(time_accumu_y, 31), 7));
+
+					end if;
 				end if;
 			end if;
 			if counter_x = 9 then
@@ -59,8 +66,14 @@ begin
 				else
 					equalX <= '1';
 				end if;
+				if reverse_g = '0' then
 				speed_y  <= speed_y - 8;
-				product <= product - time_accumu_y - to_integer(shift_left(to_signed(time_accumu_y, 31), 2));
+				product <= product -  to_integer(shift_left(to_signed(time_accumu_y, 31), 3));
+				else
+				speed_y  <= speed_y + 8;
+				product <= product +  to_integer(shift_left(to_signed(time_accumu_y, 31), 3));
+				end if;
+				
 			else
 				equalX <= '1';
 				counter_x <= counter_x + 1;
@@ -82,11 +95,11 @@ begin
 				product <= 0;
 
 				if product > 500 then -- positive speed, move up
-					plusY <= reverse_g;
-					buf_plusY <= reverse_g;
+					plusY <= '0';
+					buf_plusY <= '0';
 				else
-					plusY <= not reverse_g;
-					buf_plusY <= not reverse_g;
+					plusY <= '1';
+					buf_plusY <= '1';
 				end if;
 
 			else
