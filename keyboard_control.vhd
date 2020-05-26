@@ -8,10 +8,10 @@ entity KeyboardControl is
 		datain, clkin: in std_logic;
 		fclk, rst: in std_logic;
 
-		keyUp: out std_logic := '0'; -- key W
-		keyDown: out std_logic := '0'; -- key S
-		keyLeft: out std_logic := '0'; -- key A
-		keyRight: out std_logic := '0' -- key D
+		keyUp: out std_logic := '0'; -- key E
+		keyDown: out std_logic := '0'; -- key D
+		keyLeft: out std_logic := '0'; -- key S
+		keyRight: out std_logic := '0' -- key F
 	);
 end entity KeyboardControl;
 
@@ -45,26 +45,26 @@ begin
 					case scancode is
 						when "11110000" => -- break code
 							state <= keyReleased;
-						when "00011101" => -- key W
+						when "00100100" => -- key E
 							keyUp <= '1';
-						when "00011100" => -- key A
-							keyLeft <= '1';
 						when "00011011" => -- key S
-							keyDown <= '1';
+							keyLeft <= '1';
 						when "00100011" => -- key D
+							keyDown <= '1';
+						when "00101011" => -- key F
 							keyRight <= '1';
 						when others => -- unused branch
 					end case;
 				when keyReleased =>
 					state <= pending;
 					case scancode is
-						when "00011101" => -- key W
+						when "00100100" => -- key E
 							keyUp <= '0';
-						when "00011100" => -- key A
-							keyLeft <= '0';
 						when "00011011" => -- key S
-							keyDown <= '0';
+							keyLeft <= '0';
 						when "00100011" => -- key D
+							keyDown <= '0';
+						when "00101011" => -- key F
 							keyRight <= '0';
 						when others => -- unused branch
 					end case;
