@@ -12,7 +12,7 @@ entity mover is
 		-- not much overhead if x is 0 to 64000, y is 0 to 48000 when physics simulation?
 		-- mover consider deltaX, deltaY (0 or 1), not absolute X, Y
 		clk, rst: in std_logic; -- clk is very important for this component
-		keyLeft, keyUp, keyRight, crash_Y, crash_down, reverse: in std_logic; -- delta_Y is ignored, consider equalY as '1', speed_Y set to 0
+		keyLeft, keyUp, keyRight, crash_Y, crash_down, reverse, reload_map: in std_logic; -- delta_Y is ignored, consider equalY as '1', speed_Y set to 0
 
 		equalX, equalY, plusX, plusY: out std_logic  -- equalX: X+=0 plusX: X+=1(move right) plusY: Y+=1(move down)
 		
@@ -31,14 +31,14 @@ signal reverse_g: std_logic;
 begin
 	process(clk,rst) is  -- 500Hz
 	begin
-		if rst = '0' then
+		if rst = '0' or reload_map = '1' then
 			counter_x <= 0;
 			time_accumu_y <= 0;
 			speed_y <= 0;
 			product <= 0;
 			canjump1 <= '1';
 			canjump2 <= '1';
-			reverse_g <= '1';
+			reverse_g <= '0';
 		elsif rising_edge(clk) then
 			if last_keyUp = '0' and keyUp = '1' then
 				if canjump2 = '1' then
@@ -71,7 +71,7 @@ begin
 				time_accumu_y <= 0;
 				plusY <= not buf_plusY;
 				buf_plusY <= not buf_plusY;
-				if crash_down = '1' then
+				if reverse_g /= crash_down then
 					canjump1 <= '1';
 					canjump2 <= '1';
 				end if;

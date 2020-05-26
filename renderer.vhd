@@ -159,6 +159,8 @@ begin
 							writeData <= "000111000";
 						when "011" => -- destination
 							writeData <= "111111000";
+						when "100" =>
+							writeData <= "101001100";
 						when others =>
 							writeData <= "000000000";
 						end case;
