@@ -52,7 +52,7 @@ architecture logic of logicloop is
 		port(
 		-- mover consider deltaX, deltaY (0 or 1), not absolute X, Y
 		clk, rst: in std_logic; -- clk is very important for this component!
-		keyLeft, keyUp, keyRight,crash_Y, crash_down: in std_logic;
+		keyLeft, keyUp, keyRight,crash_Y, crash_down, reverse: in std_logic;
 		--crash_Y: in std_logic; -- crash into brick in y direction, delta Y is not applied to heroY, set speed_y to 0
 		equalX, equalY, plusX, plusY: out std_logic  -- equalX: X+=0 plusX: X+=1(move right) plusY: Y+=1(move down)
 		-- only when delta X, Y makes hero "rush into" brick, we consider it as "crashed". 
@@ -75,13 +75,14 @@ architecture logic of logicloop is
 	signal buf_equalX, buf_equalY, buf_plusX, buf_plusY: std_logic;
 	signal numofmap: integer;
 	signal reload_map: std_logic;
+	signal reverse: std_logic;
 begin
 
 	curX <= heroX;
 	curY <= heroY;
 	num_of_map <= numofmap;
 	readmap: reader port map(numofmap,clk, mapReadAddress,mapReadReturn,queryX,queryY,ans_type); 
-	move: mover port map(clk2, rst, keyLeft, keyUp, keyRight,crash_Y,crash_down, equalX, equalY, plusX, plusY);
+	move: mover port map(clk2, rst, keyLeft, keyUp, keyRight,crash_Y,crash_down,reverse, equalX, equalY, plusX, plusY);
 	process(clk,rst)
 	begin
 		if rst = '0' then
@@ -131,6 +132,7 @@ begin
 				blockY <= 22;
 				reload_map <= '0';
 			else
+			reverse <= '0';
 			case flag is 
 			 when 0 => -- move X, crash upper block
 						--state 0, 1, 2: check if crash_X
@@ -155,6 +157,9 @@ begin
 						when "011" => -- success, next map
 							reload_map <= '1';
 							numofmap <= numofmap + 1;
+						when "100" =>
+							crash_X <= '1';
+							reverse <= '1';
 						when others =>
 						end case;
 				end if;
@@ -177,6 +182,9 @@ begin
 						when "011" => -- success, next map
 							reload_map <= '1';
 							numofmap <= numofmap + 1;
+						when "100" =>
+							crash_X <= '1';
+							reverse <= '1';
 						when others =>
 						end case;
 					end if;
@@ -230,6 +238,10 @@ begin
 						when "011" => -- success, next map
 							reload_map <= '1';
 							numofmap <= numofmap + 1;
+						when "100" =>
+							crash_Y <= '1';
+							reverse <= '1';
+							crash_down <= buf_plusY;
 						when others =>
 						end case;
 					end if;
@@ -255,6 +267,10 @@ begin
 							when "011" => -- success, next map
 								reload_map <= '1';
 								numofmap <= numofmap + 1;
+							when "100" =>
+								crash_Y <= '1';
+								reverse <= '1';
+								crash_down <= buf_plusY;
 							when others =>
 							end case;
 					end if;
