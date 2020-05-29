@@ -39,6 +39,7 @@ begin
 			canjump1 <= '1';
 			canjump2 <= '1';
 			reverse_g <= '0';
+			last_keyUp <= '0';
 		elsif rising_edge(clk) then
 			if reverse = '1' then
 				reverse_g <= not reverse_g;

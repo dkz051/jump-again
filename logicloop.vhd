@@ -132,6 +132,7 @@ begin
 				blockX <= 1;
 				blockY <= 22;
 				reload_map <= '0';
+				reverse <= '0';
 			else
 			reverse <= '0';
 			case flag is 
@@ -341,7 +342,7 @@ begin
 	
 	process(block_num)
 	begin
-		addr <= ((block_num sll 1) + (block_num sll 2) + (block_num sll 4) + (block_num sll 6) + (block_num sll 8) + (block_num sll 10)) srl 12;
+		addr <= ((block_num sll 1) + (block_num sll 2) + (block_num sll 4) + (block_num sll 6) + (block_num sll 8) + (block_num sll 10) + (block_num sll 12) + (block_num sll 14)) srl 16;
 	end process;
 	
 	process(block_num, addr)
