@@ -29,7 +29,7 @@ signal buf_plusY: std_logic;
 signal canjump1,canjump2: std_logic;
 signal reverse_g: std_logic;
 begin
-	process(clk,rst) is  -- 500Hz
+	process(clk,rst, reload_map) is  -- 500Hz
 	begin
 		if rst = '0' or reload_map = '1' then
 			counter_x <= 0;
@@ -40,6 +40,9 @@ begin
 			canjump2 <= '1';
 			reverse_g <= '0';
 		elsif rising_edge(clk) then
+			if reverse = '1' then
+				reverse_g <= not reverse_g;
+			end if;
 			if last_keyUp = '0' and keyUp = '1' then
 				if canjump2 = '1' then
 					canjump2 <= canjump1;
