@@ -145,8 +145,8 @@ begin
 	process(rst, reload_map, clk3)
 	begin
 		if rst = '0' or reload_map = '1' then
-			queue_read_addr <= (others => '0');
-			queue_write_addr <= "000001010"; -- 5 second?
+			queue_read_addr <= "000001010";
+			queue_write_addr <= (others => '0'); -- 5 second?
 			EnemyExist <= '0';
 			clk3_sum <= 0;
 		elsif rising_edge(clk3) then
