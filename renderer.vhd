@@ -20,7 +20,10 @@ entity Renderer is
 		signal readOutput: in std_logic_vector(8 downto 0);
 
 		signal writeAddress: out std_logic_vector(13 downto 0);
-		signal writeContent: out std_logic_vector(8 downto 0)
+		signal writeContent: out std_logic_vector(8 downto 0);
+
+		signal imageReadAddress: out std_logic_vector(13 downto 0);
+		signal imageColorOutput: in std_logic_vector(8 downto 0)
 	);
 end entity Renderer;
 
@@ -30,7 +33,8 @@ architecture Render of Renderer is
 	signal x: std_logic_vector(9 downto 0) := (others => '0');
 	signal y: std_logic_vector(9 downto 0) := (others => '0');
 	signal color_typ: std_logic_vector(2 downto 0):= (others => '0');
-	signal x_20, y_20: integer; -- x%20, y%20, maintained by increment
+	signal x_20, y_20: integer range 0 to 19; -- x%20, y%20, maintained by increment
+	signal xy_400: integer range 0 to 399; -- (x + y * 20) % 400, maintained by increment
 	signal cnt3_x0: integer;
 	signal cnt3: integer;
 	signal readFrom: std_logic_vector(15 downto 0) := (others => '0');
@@ -43,6 +47,7 @@ begin
 	readAddress <= readFrom;
 	writeAddress <= writeTo;
 	writeContent <= writeData;
+	xy_400 <= x_20 + y_20 * 20;
 
 	process(reset, clock)
 	begin
@@ -71,18 +76,17 @@ begin
 						cnt3_x0 <= cnt3;
 					end if;
 					if x_20 = 19 then
-						
 						if y_20 /= 19 and x = 639 then -- wrap back one line
 							readFrom <= readFrom_x0; --  invisible region provide enough time here
 							cnt3 <= cnt3_x0;
-						else -- y_20 = 19 or 
-							if cnt3 = 1 then 
+						else -- y_20 = 19 or
+							if cnt3 = 1 then
 								lastData <= readOutput(2 downto 0);
 								readFrom <= readFrom +  1;
 								cnt3 <= cnt3 + 1;
 							elsif cnt3 = 2 then
 								cnt3 <= 0;
-							else	
+							else
 								cnt3 <= cnt3 + 1;
 							end if;
 						end if;
@@ -113,9 +117,9 @@ begin
 				end if;
 			else
 				x <= x + 1;
-				if x_20 = 19 then 
+				if x_20 = 19 then
 					x_20 <= 0;
-				else 
+				else
 					x_20 <= x_20 + 1;
 				end if;
 			end if;
@@ -145,7 +149,7 @@ begin
 			--				writeData <= "111111111";
 			--			when "001" =>
 			--				writedata <= "111000000";
-			--			when "010" => 
+			--			when "010" =>
 			--				writeData <= "000111000";
 			--			when others =>
 			--				writeData <= "000111111";
@@ -155,18 +159,25 @@ begin
 						if enemy_exist = '0' or enemyX > x or enemyY > y or x > enemyX + 19 or Y > enemyY + 19 then
 							case color_typ is
 							when "000" => -- air
-								writeData <= "111111111";
+								-- writeData <= "111111111";
+								imageReadAddress <= std_logic_vector(to_unsigned(xy_400, 14));
 							when "001" => -- brick
-								writedata <= "111000000";
+								-- writedata <= "111000000";
+								imageReadAddress <= std_logic_vector(to_unsigned(xy_400, 14)) + 400;
 							when "010" => -- trap
-								writeData <= "000111000";
+								-- writeData <= "000111000";
+								imageReadAddress <= std_logic_vector(to_unsigned(xy_400, 14)) + 800;
 							when "011" => -- destination
-								writeData <= "111111000";
+								-- writeData <= "111111000";
+								imageReadAddress <= std_logic_vector(to_unsigned(xy_400, 14)) + 1200;
 							when "100" =>
-								writeData <= "101001100";
+								-- writeData <= "101001100";
+								imageReadAddress <= std_logic_vector(to_unsigned(xy_400, 14)) + 1600;
 							when others =>
-								writeData <= "000000000";
+								-- writeData <= "000000000";
+								imageReadAddress <= std_logic_vector(to_unsigned(xy_400, 14));
 							end case;
+							writeData <= imageColorOutput;
 						else
 							writeData <= "000000000"; -- black enemy
 						end if;

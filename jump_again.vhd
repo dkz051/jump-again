@@ -94,12 +94,15 @@ architecture jump of JumpAgain is
 			signal heroX,enemyX: in std_logic_vector(9 downto 0);
 			signal heroY,enemyY: in std_logic_vector(8 downto 0);
 			signal enemy_exist: in std_logic;
-			
+
 			signal readAddress: out std_logic_vector(15 downto 0);
 			signal readOutput: in std_logic_vector(8 downto 0);
 
 			signal writeAddress: out std_logic_vector(13 downto 0);
-			signal writeContent: out std_logic_vector(8 downto 0)
+			signal writeContent: out std_logic_vector(8 downto 0);
+
+			signal imageReadAddress: out std_logic_vector(13 downto 0);
+			signal imageColorOutput: in std_logic_vector(8 downto 0)
 		);
 	end component Renderer;
 
@@ -129,10 +132,21 @@ architecture jump of JumpAgain is
 		-- (X,Y) of hero and number of map, is enough to send to VGA control module
 	    );
 	end component logicloop;
+
+	component images
+		port(
+			address: in std_logic_vector(13 downto 0);
+			clock: in std_logic := '1';
+			data: in std_logic_vector(8 downto 0);
+			wren: in std_logic;
+			q: out std_logic_vector(8 downto 0)
+		);
+	end component;
+
 	signal heroX,enemyX: std_logic_vector(9 downto 0); -- hardcode
 	signal heroY,enemyY: std_logic_vector(8 downto 0); -- connect logic and renderer
 	signal enemy_exist: std_logic;
-	
+
 	signal keyUp, keyDown, keyLeft, keyRight: std_logic;
 	signal sensorUp, sensorDown, sensorLeft, sensorRight: std_logic;
 
@@ -151,6 +165,9 @@ architecture jump of JumpAgain is
 
 	signal videoWriteAddress: std_logic_vector(13 downto 0);
 	signal videoWriteContent: std_logic_vector(8 downto 0);
+
+	signal imageReadAddress: std_logic_vector(13 downto 0);
+	signal imageColorOutput: std_logic_vector(8 downto 0);
 
 	signal num_of_map: integer;
 	--signal crash_block: std_logic_vector(2 downto 0);
@@ -186,11 +203,15 @@ begin
 		reset, renderClock,
 		heroX,enemyX, heroY,enemyY,enemy_exist,--"0000111111", "000111000", --hardcode heroX, heroY
 		rendererReadAddress, rendererReadReturn,
-		videoWriteAddress, videoWriteContent
+		videoWriteAddress, videoWriteContent,
+		imageReadAddress, imageColorOutput
 	);
+
+	image: images port map(imageReadAddress, clock, (others => '0'), '0', imageColorOutput);
+
 	logic: logicloop port map(
-	clock, reset, keyLeft or sensorLeft, keyRight or sensorRight, keyUp or sensorUp, 
-	heroX, enemyX, heroY, enemyY, enemy_exist, 
+	clock, reset, keyLeft or sensorLeft, keyRight or sensorRight, keyUp or sensorUp,
+	heroX, enemyX, heroY, enemyY, enemy_exist,
 	num_of_map, logicReadAddress, logicReadReturn);
 	videoMemory: video_memory port map(videoReadAddress, videoWriteAddress, clock, (others => '0'), videoWriteContent, '0', '1', videoColorOutput, open);
 
