@@ -76,6 +76,7 @@ architecture logic of logicloop is
 	signal numofmap: integer;
 	signal reload_map: std_logic;
 	signal reverse: std_logic;
+	signal should_rev: std_logic;
 begin
 
 	curX <= heroX;
@@ -122,6 +123,7 @@ begin
 			flag <= 0;
 			reload_map <= '0';
 			reverse <= '0';
+			should_rev <= '0';
 		elsif  rising_edge(clk1) then -- 8 state, check 4 block in order. 0 state: request the block type 1 state: get the block type and try to issue signal
 			if reload_map = '1' then
 				flag <= 0;
@@ -133,14 +135,19 @@ begin
 				blockY <= 22;
 				reload_map <= '0';
 				reverse <= '0';
+				should_rev <= '0';
 			else
-			reverse <= '0';
+			 reverse <= '0';
+
 			case flag is 
 			 when 0 => -- move X, crash upper block
 						--state 0, 1, 2: check if crash_X
+					should_rev <= '0';
+		
 					crash_X <= '0';
 					buf_plusX <= plusX;
 					buf_equalX <= equalX;
+					
 					if plusX = '1' then -- move right problem: blockX - 1 < 0???? will wrong at edge
 						queryX <= blockX + 1;
 						queryY <= blockY;
@@ -161,7 +168,7 @@ begin
 							numofmap <= numofmap + 1;
 						when "100" =>
 							crash_X <= '1';
-							reverse <= '1';
+							should_rev <= '1';
 						when others =>
 						end case;
 				end if;
@@ -186,7 +193,7 @@ begin
 							numofmap <= numofmap + 1;
 						when "100" =>
 							crash_X <= '1';
-							reverse <= '1';
+							should_rev <= '1';
 						when others =>
 						end case;
 					end if;
@@ -242,7 +249,7 @@ begin
 							numofmap <= numofmap + 1;
 						when "100" =>
 							crash_Y <= '1';
-							reverse <= '1';
+							should_rev <= '1';
 							crash_down <= buf_plusY;
 						when others =>
 						end case;
@@ -271,12 +278,15 @@ begin
 								numofmap <= numofmap + 1;
 							when "100" =>
 								crash_Y <= '1';
-								reverse <= '1';
+								should_rev <= '1';
 								crash_down <= buf_plusY;
 							when others =>
 							end case;
 					end if;
 			when others => -- when 9
+					if should_rev = '1' then
+						reverse <= '1';
+					end if;
 					if buf_equalY = '0' and crash_Y = '0' then
 						if buf_plusY = '1' then
 							if heroY < 459 then
