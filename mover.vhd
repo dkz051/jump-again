@@ -29,9 +29,9 @@ signal buf_plusY: std_logic;
 signal canjump1,canjump2: std_logic;
 signal reverse_g: std_logic;
 begin
-	process(rst,reverse) is
+	process(rst,reload_map, reverse) is
 	begin
-		if rst = '0' then
+		if rst = '0' or reload_map = '1' then
 			reverse_g <= '0';
 		elsif rising_edge(reverse) then
 			reverse_g <= not reverse_g;
