@@ -1,4 +1,4 @@
-maplist = ["map1.txt", "map2.txt", "map3.txt","map4.txt"]
+maplist = ["map_0.txt", "map_1.txt", "map1.txt", "map2.txt", "map3.txt","map4.txt"]
 f = open("map0.mif", "w")
 f.write("WIDTH=9;\n")
 f.write("DEPTH=%d;\n"%(256*len(maplist)))
