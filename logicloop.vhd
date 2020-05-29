@@ -62,8 +62,8 @@ architecture logic of logicloop is
 	component xyqueue
 	PORT
 	(
-		address_a		: IN STD_LOGIC_VECTOR (9 DOWNTO 0); --read
-		address_b		: IN STD_LOGIC_VECTOR (9 DOWNTO 0); --write
+		address_a		: IN STD_LOGIC_VECTOR (8 DOWNTO 0); --read
+		address_b		: IN STD_LOGIC_VECTOR (8 DOWNTO 0); --write
 		clock		: IN STD_LOGIC  := '1';
 		data_a		: IN STD_LOGIC_VECTOR (31 DOWNTO 0);
 		data_b		: IN STD_LOGIC_VECTOR (31 DOWNTO 0);
@@ -90,7 +90,7 @@ end component;
 	signal reload_map: std_logic;
 	signal reverse: std_logic;
 	signal should_rev: std_logic;
-	signal queue_read_addr, queue_write_addr: unsigned(9 downto 0);
+	signal queue_read_addr, queue_write_addr: unsigned(8 downto 0);
 	signal queue_write_data,queue_read_data: std_LOGIC_VECTOR(31 downto 0);
 	signal EnemyExist: std_logic;
 begin
@@ -146,7 +146,7 @@ begin
 	begin
 		if rst = '0' or reload_map = '1' then
 			queue_read_addr <= (others => '0');
-			queue_write_addr <= ((9)=>'1', others => '0'); -- 5 second?
+			queue_write_addr <= "000001010"; -- 5 second?
 			EnemyExist <= '0';
 			clk3_sum <= 0;
 		elsif rising_edge(clk3) then
@@ -154,12 +154,12 @@ begin
 			queue_write_data(18 downto 9)<= heroX(9 downto 0);
 			enemy_X(9 downto 0) <= queue_read_data(18 downto 9);
 			enemy_Y(8 downto 0) <= queue_read_data(8 downto 0);
-			if queue_write_addr = 1023 then
+			if queue_write_addr = 511 then
 				queue_write_addr <= (others => '0');
 			else
 				queue_write_addr <= queue_write_addr + 1;
 			end if; -- two pointer, queue_read_addr shoule follow behind queue_write_addr
-			if queue_read_addr = 1023 then
+			if queue_read_addr = 511 then
 				queue_read_addr <= (others => '0');
 			else
 				queue_read_addr <= queue_read_addr + 1;

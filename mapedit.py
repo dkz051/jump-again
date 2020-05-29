@@ -1,5 +1,6 @@
 from tkinter import *
 import time
+from sys import argv
 map_color = ['azure', 'slateblue1','SpringGreen', 'gold', 'grey']   #这个列表很重要, map_color里面有几种颜色, 格子就有几种类型, 目前有三种颜色
 #COLORS列表仅供参考, 告诉你有哪些颜色可以用
 COLORS = ['snow', 'ghost white', 'white smoke', 'gainsboro', 'floral white', 'old lace',
@@ -148,7 +149,9 @@ cv.pack()
 cv.bind("<Button-1>", xFunc1) 
 cv.bind("<B1-Motion>", xFunc2)
 #name = "" #如果你想加载现有地图文件, 就把name改成地图文件的路径
-name = "map3.txt"
+name = ""
+if len(sys.argv) > 1:
+    name = sys.argv[1]
 if name != "":
     load_map(cv, name)
 win.mainloop()
