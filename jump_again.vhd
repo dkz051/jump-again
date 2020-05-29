@@ -1,6 +1,5 @@
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.std_logic_unsigned.all;
 use ieee.std_logic_arith.all;
 
 entity JumpAgain is -- top entity
@@ -92,9 +91,10 @@ architecture jump of JumpAgain is
 			signal reset: in std_logic;
 			signal clock: in std_logic; -- 25 MHz clock
 
-			signal heroX: in std_logic_vector(9 downto 0);
-			signal heroY: in std_logic_vector(8 downto 0);
-
+			signal heroX,enemyX: in std_logic_vector(9 downto 0);
+			signal heroY,enemyY: in std_logic_vector(8 downto 0);
+			signal enemy_exist: in std_logic;
+			
 			signal readAddress: out std_logic_vector(15 downto 0);
 			signal readOutput: in std_logic_vector(8 downto 0);
 
@@ -118,8 +118,9 @@ architecture jump of JumpAgain is
 		--crash_block: out std_logic_vector(2 downto 0);
 		clk,rst: in std_logic; -- we need clock
 		keyLeft,keyRight,keyUp: in std_logic; -- "keyboard input"
-		curX: out std_logic_vector(9 downto 0);
-		curY: out std_logic_vector(8 downto 0); -- place of hero
+		curX,enemyX: out std_logic_vector(9 downto 0);
+		curY,enemyY: out std_logic_vector(8 downto 0);
+		enemy_exist: out std_logic;
 		num_of_map: out integer; -- which map?
 		mapReadAddress: out std_logic_vector(15 downto 0);
 		mapReadReturn: in std_logic_vector(8 downto 0)
@@ -128,9 +129,10 @@ architecture jump of JumpAgain is
 		-- (X,Y) of hero and number of map, is enough to send to VGA control module
 	    );
 	end component logicloop;
-	signal heroX: std_logic_vector(9 downto 0); -- hardcode
-	signal heroY: std_logic_vector(8 downto 0); -- connect logic and renderer
-
+	signal heroX,enemyX: std_logic_vector(9 downto 0); -- hardcode
+	signal heroY,enemyY: std_logic_vector(8 downto 0); -- connect logic and renderer
+	signal enemy_exist: std_logic;
+	
 	signal keyUp, keyDown, keyLeft, keyRight: std_logic;
 	signal sensorUp, sensorDown, sensorLeft, sensorRight: std_logic;
 
@@ -182,11 +184,14 @@ begin
 	--	crash_block,
 		num_of_map,
 		reset, renderClock,
-		heroX, heroY,--"0000111111", "000111000", --hardcode heroX, heroY
+		heroX,enemyX, heroY,enemyY,enemy_exist,--"0000111111", "000111000", --hardcode heroX, heroY
 		rendererReadAddress, rendererReadReturn,
 		videoWriteAddress, videoWriteContent
 	);
-	logic: logicloop port map(clock, reset, keyLeft or sensorLeft, keyRight or sensorRight, keyUp or sensorUp, heroX, heroY, num_of_map, logicReadAddress, logicReadReturn);
+	logic: logicloop port map(
+	clock, reset, keyLeft or sensorLeft, keyRight or sensorRight, keyUp or sensorUp, 
+	heroX, enemyX, heroY, enemyY, enemy_exist, 
+	num_of_map, logicReadAddress, logicReadReturn);
 	videoMemory: video_memory port map(videoReadAddress, videoWriteAddress, clock, (others => '0'), videoWriteContent, '0', '1', videoColorOutput, open);
 
 	dataMemory: data port map(rendererReadAddress, logicReadAddress, clock, (others => '0'), (others => '0'), '0', '0', rendererReadReturn, logicReadReturn);

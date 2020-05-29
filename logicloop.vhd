@@ -1,8 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.std_logic_unsigned.all;
-use ieee.std_logic_arith.all;
 use ieee.numeric_std.all;
+use ieee.std_logic_unsigned.all;
 -- i//3 = (i*1366) >> 12
 -- bin(1366)
 -- '0b10101010110'	
@@ -11,8 +10,9 @@ entity logicloop is
 --		crash_block: out std_logic_vector(2 downto 0);
 		clk,rst: in std_logic; -- we need clock clk: 100 MHz
 		keyLeft,keyRight,keyUp: in std_logic; -- "keyboard input"
-		curX: out std_logic_vector(9 downto 0);
-		curY: out std_logic_vector(8 downto 0);
+		curX,enemyX: out std_logic_vector(9 downto 0);
+		curY,enemyY: out std_logic_vector(8 downto 0);
+		enemy_exist: out std_logic;
 		num_of_map: out integer;  -- which map?
 		mapReadAddress: out std_logic_vector(15 downto 0);
 		mapReadReturn: in std_logic_vector(8 downto 0)
@@ -59,11 +59,24 @@ architecture logic of logicloop is
 	    -- delta X, Y, need to be modified by crach checker
 	    ); -- when rst, set speed_y to 0, then free falling
 	end component;
-	signal heroX: std_logic_vector(9 downto 0);
-	signal heroY: std_logic_vector(8 downto 0);
-	signal clk1_counter,clk2_counter: integer;
-	signal clk1: std_logic;
-	signal clk2: std_logic; 
+	component xyqueue
+	PORT
+	(
+		address_a		: IN STD_LOGIC_VECTOR (9 DOWNTO 0); --read
+		address_b		: IN STD_LOGIC_VECTOR (9 DOWNTO 0); --write
+		clock		: IN STD_LOGIC  := '1';
+		data_a		: IN STD_LOGIC_VECTOR (31 DOWNTO 0);
+		data_b		: IN STD_LOGIC_VECTOR (31 DOWNTO 0);
+		wren_a		: IN STD_LOGIC  := '0';
+		wren_b		: IN STD_LOGIC  := '0';
+		q_a		: OUT STD_LOGIC_VECTOR (31 DOWNTO 0);
+		q_b		: OUT STD_LOGIC_VECTOR (31 DOWNTO 0)
+	);
+end component;
+	signal heroX,enemy_X: std_logic_vector(9 downto 0);
+	signal heroY,enemy_Y: std_logic_vector(8 downto 0);
+	signal clk1_counter,clk2_counter,clk3_counter, clk3_sum: integer;
+	signal clk1,clk2,clk3: std_logic;
 	signal equalX, equalY, plusX, plusY: std_logic;
 	signal crash_X, crash_Y: std_logic;
 	signal crash_down: std_logic;
@@ -77,11 +90,22 @@ architecture logic of logicloop is
 	signal reload_map: std_logic;
 	signal reverse: std_logic;
 	signal should_rev: std_logic;
+	signal queue_read_addr, queue_write_addr: unsigned(9 downto 0);
+	signal queue_write_data,queue_read_data: std_LOGIC_VECTOR(31 downto 0);
+	signal EnemyExist: std_logic;
 begin
 
 	curX <= heroX;
 	curY <= heroY;
+	enemyX <= enemy_X;
+	enemyY <= enemy_Y;
 	num_of_map <= numofmap;
+	enemy_exist <= EnemyExist;
+	xyq: xyqueue port map(
+		std_LOGIC_VECTOR(queue_read_addr), std_LOGIC_VECTOR(queue_write_addr), clk, 
+		(others => '0'), queue_write_data,
+		'0', '1', 
+		queue_read_data,open);
 	readmap: reader port map(numofmap,clk, mapReadAddress,mapReadReturn,queryX,queryY,ans_type); 
 	move: mover port map(clk2, rst, keyLeft, keyUp, keyRight,crash_Y,crash_down,reverse,reload_map, equalX, equalY, plusX, plusY);
 	process(clk,rst)
@@ -89,8 +113,10 @@ begin
 		if rst = '0' then
 			clk1_counter <= 0;
 			clk2_counter <= 0;
+			clk3_counter <= 0;
 			clk1 <= '0';
 			clk2 <= '0';
+			clk3 <= '0';
 		elsif rising_edge(clk) then
 			if clk1_counter = 10000 then -- 5000 Hz! 
 				clk1 <= not clk1;
@@ -108,7 +134,41 @@ begin
 				clk2_counter <= clk2_counter + 1;
 			end if;
 			
+			if clk3_counter = 500000 then  -- clk3: 100hz 
+				clk3 <= not clk3;
+				clk3_counter <= 0;
+			else
+				clk3_counter <= clk3_counter + 1;
+			end if;
 		end if;
+	end process;
+	process(rst, reload_map, clk3)
+	begin
+		if rst = '0' or reload_map = '1' then
+			queue_read_addr <= (others => '0');
+			queue_write_addr <= ((9)=>'1', others => '0'); -- 5 second?
+			EnemyExist <= '0';
+			clk3_sum <= 0;
+		elsif rising_edge(clk3) then
+			queue_write_data(8 downto 0) <= heroY(8 downto 0);
+			queue_write_data(18 downto 9)<= heroX(9 downto 0);
+			enemy_X(9 downto 0) <= queue_read_data(18 downto 9);
+			enemy_Y(8 downto 0) <= queue_read_data(8 downto 0);
+			if queue_write_addr = 1023 then
+				queue_write_addr <= (others => '0');
+			else
+				queue_write_addr <= queue_write_addr + 1;
+			end if; -- two pointer, queue_read_addr shoule follow behind queue_write_addr
+			if queue_read_addr = 1023 then
+				queue_read_addr <= (others => '0');
+			else
+				queue_read_addr <= queue_read_addr + 1;
+			end if;
+			clk3_sum <= clk3_sum + 1;
+			if clk3_sum = 500 then -- 5 second
+				EnemyExist <= '1';
+			end if;
+		end if;		
 	end process;
 	process(rst, clk1)
 	begin
@@ -312,6 +372,12 @@ begin
 									y_20 <= y_20 - 1;
 								end if;
 							end if;
+						end if;
+					end if;
+					-------------------------check enemy
+					if EnemyExist = '1' then
+						if enemy_X - heroX < 20 and heroX - enemy_X < 20 and enemy_Y - heroY < 20 and heroY - enemy_Y < 20 then
+							reload_map <= '1';
 						end if;
 					end if;
 			end case;				

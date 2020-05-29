@@ -79,6 +79,24 @@ set_global_assignment -name USE_SIGNALTAP_FILE JumpAgain.stp
 set_global_assignment -name TIMEQUEST_REPORT_SCRIPT_INCLUDE_DEFAULT_ANALYSIS OFF
 set_global_assignment -name TIMEQUEST_DO_CCPP_REMOVAL OFF
 
+set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
+set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
+set_location_assignment PIN_C19 -to rx
+set_location_assignment PIN_AC7 -to kRight
+set_location_assignment PIN_AB8 -to sRight
+set_location_assignment PIN_AB10 -to right
+set_location_assignment PIN_AE7 -to kLeft
+set_location_assignment PIN_AF7 -to sLeft
+set_location_assignment PIN_AE9 -to left
+set_location_assignment PIN_AF9 -to kDown
+set_location_assignment PIN_AD10 -to sDown
+set_location_assignment PIN_AD15 -to down
+set_location_assignment PIN_AE11 -to kUp
+set_location_assignment PIN_AC15 -to sUp
+set_location_assignment PIN_AE15 -to up
+set_global_assignment -name SLD_FILE "C:/Users/Chrogeek/Documents/Development/Projects/jump-again/JumpAgain_auto_stripped.stp"
+set_global_assignment -name VHDL_FILE xyqueue.vhd
+set_global_assignment -name SOURCE_FILE xyqueue.cmp
 set_global_assignment -name VHDL_FILE logicloop.vhd
 set_global_assignment -name VHDL_FILE pll.vhd
 set_global_assignment -name SOURCE_FILE pll.cmp
@@ -96,20 +114,5 @@ set_global_assignment -name VHDL_FILE jump_again.vhd
 set_global_assignment -name QIP_FILE video_memory.qip
 set_global_assignment -name QIP_FILE data.qip
 set_global_assignment -name QIP_FILE pll.qip
-set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
-set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
-set_location_assignment PIN_C19 -to rx
-set_location_assignment PIN_AC7 -to kRight
-set_location_assignment PIN_AB8 -to sRight
-set_location_assignment PIN_AB10 -to right
-set_location_assignment PIN_AE7 -to kLeft
-set_location_assignment PIN_AF7 -to sLeft
-set_location_assignment PIN_AE9 -to left
-set_location_assignment PIN_AF9 -to kDown
-set_location_assignment PIN_AD10 -to sDown
-set_location_assignment PIN_AD15 -to down
-set_location_assignment PIN_AE11 -to kUp
-set_location_assignment PIN_AC15 -to sUp
-set_location_assignment PIN_AE15 -to up
-set_global_assignment -name SLD_FILE "C:/Users/Chrogeek/Documents/Development/Projects/jump-again/JumpAgain_auto_stripped.stp"
+set_global_assignment -name QIP_FILE xyqueue.qip
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

@@ -11,8 +11,10 @@ entity Renderer is
 		signal reset: in std_logic;
 		signal clock: in std_logic; -- 25 MHz clock
 
-		signal heroX: in std_logic_vector(9 downto 0);
-		signal heroY: in std_logic_vector(8 downto 0);
+
+		signal heroX,enemyX: in std_logic_vector(9 downto 0);
+		signal heroY,enemyY: in std_logic_vector(8 downto 0);
+		signal enemy_exist: in std_logic;
 
 		signal readAddress: out std_logic_vector(15 downto 0);
 		signal readOutput: in std_logic_vector(8 downto 0);
@@ -150,20 +152,24 @@ begin
 			--		end case;
 			--	else
 					if  heroX > x or heroY > y or  x > heroX + 19 or  y > heroY + 19  then
-						case color_typ is
-						when "000" => -- air
-							writeData <= "111111111";
-						when "001" => -- brick
-							writedata <= "111000000";
-						when "010" => -- trap
-							writeData <= "000111000";
-						when "011" => -- destination
-							writeData <= "111111000";
-						when "100" =>
-							writeData <= "101001100";
-						when others =>
-							writeData <= "000000000";
-						end case;
+						if enemy_exist = '0' or enemyX > x or enemyY > y or x > enemyX + 19 or Y > enemyY + 19 then
+							case color_typ is
+							when "000" => -- air
+								writeData <= "111111111";
+							when "001" => -- brick
+								writedata <= "111000000";
+							when "010" => -- trap
+								writeData <= "000111000";
+							when "011" => -- destination
+								writeData <= "111111000";
+							when "100" =>
+								writeData <= "101001100";
+							when others =>
+								writeData <= "000000000";
+							end case;
+						else
+							writeData <= "000000000"; -- black enemy
+						end if;
 					else
 						writeData <= "000000111";
 					end if;
