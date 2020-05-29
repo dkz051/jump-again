@@ -33,7 +33,7 @@ begin
 	begin
 		if rst = '0' then
 			reverse_g <= '0';
-		elsif reverse = '1' then
+		elsif rising_edge(reverse) then
 			reverse_g <= not reverse_g;
 		end if;
 	end process;
