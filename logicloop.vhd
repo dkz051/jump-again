@@ -147,7 +147,7 @@ begin
 		if rst = '0' or reload_map = '1' then
 			queue_read_addr <= "000001010";
 			queue_write_addr <= (others => '0'); -- 5 second?
-			EnemyExist <= '0';
+			
 			clk3_sum <= 0;
 		elsif rising_edge(clk3) then
 			queue_write_data(8 downto 0) <= heroY(8 downto 0);
@@ -165,9 +165,6 @@ begin
 				queue_read_addr <= queue_read_addr + 1;
 			end if;
 			clk3_sum <= clk3_sum + 1;
-			if clk3_sum = 500 then -- 5 second
-				EnemyExist <= '1';
-			end if;
 		end if;		
 	end process;
 	process(rst, clk1)
@@ -182,9 +179,13 @@ begin
 			blockY <= 22;
 			flag <= 0;
 			reload_map <= '0';
+			EnemyExist <= '0';
 			reverse <= '0';
 			should_rev <= '0';
 		elsif  rising_edge(clk1) then -- 8 state, check 4 block in order. 0 state: request the block type 1 state: get the block type and try to issue signal
+			if clk3_sum = 500 then -- 5 second
+				EnemyExist <= '1';
+			end if;
 			if reload_map = '1' then
 				flag <= 0;
 				heroX <= "0000011110"; -- 30
@@ -222,9 +223,12 @@ begin
 							crash_X <= '1';
 						when "010" => --death
 							reload_map <= '1';
+							EnemyExist <= '0';
+
 							-- numofmap <= numofmap;
 						when "011" => -- success, next map
 							reload_map <= '1';
+							EnemyExist <= '0';
 							numofmap <= numofmap + 1;
 						when "100" =>
 							crash_X <= '1';
@@ -247,9 +251,11 @@ begin
 							crash_X <= '1';
 						when "010" =>
 							reload_map <= '1';
+							EnemyExist <= '0';
 							-- numofmap <= numofmap;
 						when "011" => -- success, next map
 							reload_map <= '1';
+							EnemyExist <= '0';
 							numofmap <= numofmap + 1;
 						when "100" =>
 							crash_X <= '1';
@@ -303,9 +309,11 @@ begin
 							crash_down <= buf_plusY;
 						when "010" =>
 							reload_map <= '1';
+							EnemyExist <= '0';
 							-- numofmap <= numofmap;
 						when "011" => -- success, next map
 							reload_map <= '1';
+							EnemyExist <= '0';
 							numofmap <= numofmap + 1;
 						when "100" =>
 							crash_Y <= '1';
@@ -332,9 +340,11 @@ begin
 								crash_down <= buf_plusY;
 							when "010" =>
 								reload_map <= '1';
+								EnemyExist <= '0';
 								-- numofmap <= numofmap;
 							when "011" => -- success, next map
 								reload_map <= '1';
+								EnemyExist <= '0';
 								numofmap <= numofmap + 1;
 							when "100" =>
 								crash_Y <= '1';
