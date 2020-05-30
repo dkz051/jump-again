@@ -233,7 +233,7 @@ begin
 							numofmap <= numofmap + 1;
 						when "100" =>
 							crash_X <= '1';
-							should_rev <= '1';
+						--	should_rev <= '1';
 						when others =>
 						end case;
 				end if;
@@ -260,7 +260,7 @@ begin
 							numofmap <= numofmap + 1;
 						when "100" =>
 							crash_X <= '1';
-							should_rev <= '1';
+						--	should_rev <= '1';
 						when others =>
 						end case;
 					end if;
