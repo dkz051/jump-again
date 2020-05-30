@@ -360,7 +360,7 @@ begin
 					end if;
 					if buf_equalY = '0' and crash_Y = '0' then
 						if buf_plusY = '1' then
-							if heroY < 459 then
+							if heroY < 460 then
 								heroY <= heroY + 1;
 								if y_20 = 19 then
 									y_20 <= 0;
