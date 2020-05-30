@@ -174,8 +174,10 @@ begin
 			lastColor <= (others => '0');
 		else
 			if x < 640 and y < 480 then -- inside the map
-				if  heroX > x or heroY > y or  x > heroX + 19 or  y > heroY + 19  then
-					if enemy_exist = '0' or enemyX > x or enemyY > y or x > enemyX + 19 or Y > enemyY + 19 then
+				if  heroX + 6 > x or heroY + 7 > y or  x > heroX + 14 or  y > heroY + 19  then
+					if enemy_exist = '0' or enemyX + 6 > x or enemyY + 7 > y or x > enemyX + 14 or Y > enemyY + 19 then
+			--	if  heroX > x or heroY > y or  x > heroX + 19 or  y > heroY + 19  then
+			--		if enemy_exist = '0' or enemyX > x or enemyY > y or x > enemyX + 19 or Y > enemyY + 19 then
 						lastColor <= imageColorOutput;
 					else
 						lastColor <= "000000000"; -- black enemy

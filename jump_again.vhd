@@ -133,15 +133,17 @@ architecture jump of JumpAgain is
 	    );
 	end component logicloop;
 
-	component images
-		port(
-			address: in std_logic_vector(14 downto 0);
-			clock: in std_logic := '1';
-			data: in std_logic_vector(8 downto 0);
-			wren: in std_logic;
-			q: out std_logic_vector(8 downto 0)
-		);
-	end component;
+	
+component images
+	PORT
+	(
+		address_a		: IN STD_LOGIC_VECTOR (14 DOWNTO 0);
+		address_b		: IN STD_LOGIC_VECTOR (14 DOWNTO 0);
+		clock		: IN STD_LOGIC  := '1';
+		q_a		: OUT STD_LOGIC_VECTOR (8 DOWNTO 0);
+		q_b		: OUT STD_LOGIC_VECTOR (8 DOWNTO 0)
+	);
+end component;
 
 	signal heroX,enemyX: std_logic_vector(9 downto 0); -- hardcode
 	signal heroY,enemyY: std_logic_vector(8 downto 0); -- connect logic and renderer
@@ -208,7 +210,7 @@ begin
 		imageReadAddress, imageColorOutput
 	);
 
-	image: images port map(imageReadAddress, clock, (others => '0'), '0', imageColorOutput);
+	image: images port map(imageReadAddress,(others => '0'), clock, imageColorOutput, open);
 
 	logic: logicloop port map(
 	clock, reset, keyLeft or sensorLeft, keyRight or sensorRight, keyUp or sensorUp,

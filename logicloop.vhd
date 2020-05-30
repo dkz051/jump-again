@@ -218,35 +218,38 @@ begin
 						queryY <= blockY;
 					end if;
 			 when 1 =>
-				if x_20 = 0 then
-					case ans_type is
-						when "001" => --brick
-							crash_X <= '1';
-						when "010" => --death
-							reload_map <= '1';
-							EnemyExist <= '0';
+				if y_20 < 13 then
+					if (x_20 = 6 and buf_plusX = '1') or (x_20 = 14 and buf_plusX = '0')then
+						case ans_type is
+							when "001" => --brick
+								crash_X <= '1';
+							when "010" => --death
+								reload_map <= '1';
+								EnemyExist <= '0';
 
-							-- numofmap <= numofmap;
-						when "011" => -- success, next map
-							reload_map <= '1';
-							EnemyExist <= '0';
-							numofmap <= numofmap + 1;
-						when "100" =>
-							crash_X <= '1';
-						--	should_rev <= '1';
-						when others =>
-						end case;
+								-- numofmap <= numofmap;
+							when "011" => -- success, next map
+								reload_map <= '1';
+								EnemyExist <= '0';
+								numofmap <= numofmap + 1;
+							when "100" =>
+								crash_X <= '1';
+							--	should_rev <= '1';
+							when others =>
+							end case;
+					end if;
 				end if;
 			 when 2 => -- move X, crash lower block
-						if buf_plusX = '1'  then -- move right
-							queryX <= blockX + 1;
-							queryY <= blockY + 1;
-						else --move left
-							queryX <= blockX - 1;
-							queryY <= blockY + 1;
-						end if;
+					if buf_plusX = '1'  then -- move right
+						queryX <= blockX + 1;
+						queryY <= blockY + 1;
+					else --move left
+						queryX <= blockX - 1;
+						queryY <= blockY + 1;
+					end if;
 			when 3 => -- moveX ?
-					if x_20 = 0 and y_20 /= 0 then
+				if y_20 /= 0 then
+					if (x_20 = 6 and buf_plusX = '1') or (x_20 = 14 and buf_plusX = '0') then
 						case ans_type is
 						when "001" =>
 							crash_X <= '1';
@@ -264,6 +267,7 @@ begin
 						when others =>
 						end case;
 					end if;
+				end if;
 			when 4 =>
 				if buf_equalX = '0' and crash_X = '0' then
 						if buf_plusX = '1' then
@@ -293,17 +297,16 @@ begin
 					crash_Y <= '0';
 					buf_equalY <= equalY;
 					buf_plusY <= plusY;
-					if y_20 = 0 then
-						if plusY = '1' then -- move down
-							queryX <= blockX;
-							queryY <= blockY + 1;
-						else --move up
-							queryX <= blockX;
-							queryY <= blockY - 1;
-						end if;
+					if plusY = '1' then -- move down
+						queryX <= blockX;
+						queryY <= blockY + 1;
+					else --move up
+						queryX <= blockX;
+						queryY <= blockY - 1;
 					end if;
 			when 6 =>
-					if y_20 = 0 then
+				if x_20 < 14 then
+					if (buf_plusY = '1' and y_20 = 0) or (buf_plusY = '0' and y_20 = 13) then
 					case ans_type is
 						when "001" =>
 							crash_Y <= '1';
@@ -323,18 +326,18 @@ begin
 						when others =>
 						end case;
 					end if;
+				end if;
 			when 7 =>
-					if y_20 = 0 then
-						if buf_plusY = '1' then -- move down
-							queryX <= blockX + 1;
-							queryY <= blockY + 1;
-						else --move up
-							queryX <= blockX + 1;
-							queryY <= blockY - 1;
-						end if;
-					end if;
+				if buf_plusY = '1' then -- move down
+					queryX <= blockX + 1;
+					queryY <= blockY + 1;
+				else --move up
+					queryX <= blockX + 1;
+					queryY <= blockY - 1;
+				end if;
 			when 8 =>
-					if y_20 = 0 and x_20 /= 0 then
+				if x_20 > 6 then
+					if (buf_plusY = '1' and y_20 = 0) or (buf_plusY = '0' and y_20 = 13) then
 							case ans_type is
 							when "001" =>
 								crash_Y <= '1';
@@ -354,6 +357,7 @@ begin
 							when others =>
 							end case;
 					end if;
+				end if;
 			when others => -- when 9
 					if should_rev = '1' then
 						reverse <= '1';
@@ -389,7 +393,7 @@ begin
 					end if;
 					-------------------------check enemy
 					if EnemyExist = '1' then
-						if enemy_X  < 20 + heroX and heroX  < 20 + enemy_X and enemy_Y  < 20 + heroY and heroY  < 20 + enemy_Y then
+						if enemy_X  < 8 + heroX and heroX  < 8 + enemy_X and enemy_Y  < 13 + heroY and heroY  < 13 + enemy_Y then
 							reload_map <= '1';
 							EnemyExist <= '0';
 						end if;
