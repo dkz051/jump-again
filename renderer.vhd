@@ -28,7 +28,7 @@ entity Renderer is
 		signal heroReadAddress: out std_logic_vector(14 downto 0);
 		signal heroColorOutput: in std_logic_vector(8 downto 0);
 		
-		signal directions: in std_LOGIC_VECTOR(3 downto 0);
+		signal directions: in std_LOGIC_VECTOR(2 downto 0);
 		signal herox_20, heroy_20: in integer
 	);
 end entity Renderer;
@@ -50,11 +50,37 @@ architecture Render of Renderer is
 	signal firstData: std_logic_vector(2 downto 0); -- first data in a line
 	signal lastColor: std_logic_vector(8 downto 0);
 	signal heroMapNum: std_logic_vector(4 downto 0);
+	signal SlowClock1,SlowClock2: std_logic;
+	signal slow_counter: integer;
 begin
 	readAddress <= readFrom;
 	writeAddress <= writeTo;
 	writeContent <= writeData;
-
+	process(reset, clock)
+	begin
+		if reset = '0' then
+			slow_counter <= 0;
+			SlowClock1 <= '0';
+			SlowClock2 <= '0';
+		elsif rising_edge(clock) then
+			if slow_counter = 3125000 then
+				slow_counter <= 0;
+				SlowClock1 <= not SlowClock1; -- 4Hz
+				SlowClock2 <= SlowClock2 xor SlowClock1; -- 2Hz
+			else
+				slow_counter <= slow_counter + 1;
+			end if;
+		end if;
+	end process;
+	process(reset, SlowClock1)
+	begin
+		if reset = '0' then
+			heroMapNum <= "01000";
+		elsif rising_edge(SlowClock1) then
+		-- update heroMapNum according to directions
+			heroMapNum <= "01000";
+		end if;
+	end process;
 	process(reset, clock)
 	begin
 		if reset = '0' then
@@ -67,7 +93,6 @@ begin
 			writeTo <= (others => '0');
 			readFrom_x0 <= std_logic_vector(to_unsigned(num_of_map * 256, 16));
 			cnt3_x0 <= 0;
-			heroMapNum <= "01000";
 		elsif rising_edge(clock) then
 			if x = 700 then
 				lastData <= readOutput(2 downto 0);
@@ -174,7 +199,24 @@ begin
 					imageReadAddress <= (others => '0');
 			end case;
 			
-			heroReadAddress <=  heroMapNum &  std_logic_vector(to_unsigned(20 + heroy_20 - y_20, 5)) & std_logic_vector(to_unsigned(20 + herox_20 - x_20, 5));
+			-- direction(2): face left / right direction(1,0): "00" no movement "01" horizontal move "10" up "11" down
+			--direction(2) : face left / right
+			--direction(1) : whether move vertically
+			--direction(0): whether move horizontally/whether move upward
+			
+			if y_20 > heroy_20 then 
+				if x_20 > herox_20 then
+					heroReadAddress <=  heroMapNum &  std_logic_vector(to_unsigned(20 + heroy_20 - y_20, 5)) & std_logic_vector(to_unsigned(20 + herox_20 - x_20, 5));
+				else
+					heroReadAddress <=  heroMapNum &  std_logic_vector(to_unsigned(20 + heroy_20 - y_20, 5)) & std_logic_vector(to_unsigned(herox_20 - x_20, 5));
+				end if;
+			else
+				if x_20 > herox_20 then
+					heroReadAddress <=  heroMapNum &  std_logic_vector(to_unsigned(heroy_20 - y_20, 5)) & std_logic_vector(to_unsigned(20 + herox_20 - x_20, 5));
+				else
+					heroReadAddress <=  heroMapNum &  std_logic_vector(to_unsigned(heroy_20 - y_20, 5)) & std_logic_vector(to_unsigned(herox_20 - x_20, 5));
+				end if;
+			end if;
 			-- assign heroReadAddress
 		end if;
 	end process;

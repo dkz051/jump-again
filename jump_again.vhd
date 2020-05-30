@@ -107,7 +107,7 @@ architecture jump of JumpAgain is
 			signal heroReadAddress: out std_logic_vector(14 downto 0);
 			signal heroColorOutput: in std_logic_vector(8 downto 0);
 			
-			signal directions: in std_LOGIC_VECTOR(3 downto 0);
+			signal directions: in std_LOGIC_VECTOR(2 downto 0);
 			signal herox_20, heroy_20: in integer
 		);
 	end component Renderer;
@@ -133,7 +133,7 @@ architecture jump of JumpAgain is
 		num_of_map: out integer; -- which map?
 		mapReadAddress: out std_logic_vector(15 downto 0);
 		mapReadReturn: in std_logic_vector(8 downto 0);
-		move_direction: out std_logic_vector(3 downto 0);
+		move_direction: out std_logic_vector(2 downto 0);
 		herox_20, heroy_20: out integer
 
 		-- if there's no moving parts other than hero, if the status of grid won't change, then,
@@ -182,7 +182,7 @@ end component;
 	signal heroReadAddress: std_logic_vector(14 downto 0);
 	signal heroColorOutput: std_logic_vector(8 downto 0);
 
-	signal directions: std_logic_vector(3 downto 0);
+	signal directions: std_logic_vector(2 downto 0);
 	
 	signal num_of_map: integer;
 	signal reverseG: std_logic;

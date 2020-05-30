@@ -16,7 +16,7 @@ entity logicloop is
 		num_of_map: out integer;  -- which map?
 		mapReadAddress: out std_logic_vector(15 downto 0);
 		mapReadReturn: in std_logic_vector(8 downto 0);
-		move_direction: out std_logic_vector(3 downto 0);
+		move_direction: out std_logic_vector(2 downto 0);
 		herox_20, heroy_20: out integer
 		-- if there's no moving parts other than hero, if the status of grid won't change, then,
 		-- (X,Y) of hero and number of map, is enough to send to VGA control module
@@ -95,6 +95,7 @@ end component;
 	signal queue_read_addr, queue_write_addr: unsigned(8 downto 0);
 	signal queue_write_data,queue_read_data: std_LOGIC_VECTOR(31 downto 0);
 	signal EnemyExist,reverseG: std_logic;
+	signal real_directions, directions: std_logic_vector(2 downto 0); 
 begin
 
 	curX <= heroX;
@@ -106,6 +107,7 @@ begin
 	reverse_g <= reverseG;
 	herox_20 <= x_20;
 	heroy_20 <= y_20;
+	move_direction <= real_directions;
 	xyq: xyqueue port map(
 		std_LOGIC_VECTOR(queue_read_addr), std_LOGIC_VECTOR(queue_write_addr), clk, 
 		(others => '0'), queue_write_data,
@@ -187,6 +189,10 @@ begin
 			EnemyExist <= '0';
 			reverse <= '0';
 			should_rev <= '0';
+			directions <= "100"; -- direction(2): face left / right direction(1,0): "00" no movement "01" horizontal move "10" up "11" down
+			--direction(2) : face left / right
+			--direction(1) : whether move vertically
+			--direction(0): whether move horizontally/whether move upward
 		elsif  rising_edge(clk1) then -- 8 state, check 4 block in order. 0 state: request the block type 1 state: get the block type and try to issue signal
 			if clk3_sum = 515 then -- 5 second
 				EnemyExist <= '1';
@@ -202,12 +208,16 @@ begin
 				reload_map <= '0';
 				reverse <= '0';
 				should_rev <= '0';
+				directions <= "100";
 			else
 			 reverse <= '0';
 
 			case flag is 
 			 when 0 => -- move X, crash upper block
 						--state 0, 1, 2: check if crash_X
+					real_directions <= directions; -- after finish a round , emit directions
+					directions(1) <= '0'; -- horizontal
+					directions(0) <= '0';
 					should_rev <= '0';
 		
 					crash_X <= '0';
@@ -278,6 +288,8 @@ begin
 							if heroX < 619 then
 							-- try heroX <= heroX + 1; maybe crash?
 								heroX <= heroX + 1;
+								directions(2) <= '1'; --face right
+								directions(0) <= '1';
 								if x_20 = 19 then
 									x_20 <= 0;
 									blockX <= blockX + 1;
@@ -287,6 +299,8 @@ begin
 							end if;
 						else 
 							if heroX > 0 then
+								directions(2)<= '0'; -- face left
+								directions(0) <= '1';
 								heroX <= heroX - 1;
 								if x_20 = 0 then 
 									x_20 <= 19;
@@ -298,6 +312,7 @@ begin
 						end if;
 					end if;
 			when 5 =>
+					directions(1) <= '0';
 					crash_Y <= '0';
 					buf_equalY <= equalY;
 					buf_plusY <= plusY;
@@ -370,6 +385,8 @@ begin
 						if buf_plusY = '1' then
 							if heroY < 460 then
 								heroY <= heroY + 1;
+								directions(1) <= '1';
+								directions(0) <= '1';
 								if y_20 = 19 then
 									y_20 <= 0;
 									if blockY = 22 then -- bottom death
@@ -386,6 +403,8 @@ begin
 						else
 							if heroY > 0 then
 								heroY <= heroY - 1;
+								directions(1) <= '1';
+								directions(0) <= '0';
 								if y_20 = 0 then
 									y_20 <= 19;
 									blockY <= blockY - 1;
