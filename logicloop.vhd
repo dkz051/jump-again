@@ -96,6 +96,7 @@ end component;
 	signal queue_write_data,queue_read_data: std_LOGIC_VECTOR(31 downto 0);
 	signal EnemyExist,reverseG: std_logic;
 	signal real_directions, directions: std_logic_vector(2 downto 0); 
+	signal rev_counter: integer;
 begin
 
 	curX <= heroX;
@@ -190,6 +191,7 @@ begin
 			reverse <= '0';
 			should_rev <= '0';
 			directions <= "100"; -- direction(2): face left / right direction(1,0): "00" no movement "01" horizontal move "10" up "11" down
+			rev_counter <= 0;
 			--direction(2) : face left / right
 			--direction(1) : whether move vertically
 			--direction(0): whether move horizontally/whether move upward
@@ -209,9 +211,12 @@ begin
 				reverse <= '0';
 				should_rev <= '0';
 				directions <= "100";
+				rev_counter <= 0;
 			else
 			 reverse <= '0';
-
+			if rev_counter > 0 then
+				rev_counter <= rev_counter - 1;
+			end if;
 			case flag is 
 			 when 0 => -- move X, crash upper block
 						--state 0, 1, 2: check if crash_X
@@ -378,8 +383,9 @@ begin
 					end if;
 				end if;
 			when others => -- when 9
-					if should_rev = '1' then
+					if rev_counter = 0 and should_rev = '1' then
 						reverse <= '1';
+						rev_counter <= 500;
 					end if;
 					if buf_equalY = '0' and crash_Y = '0' then
 						if buf_plusY = '1' then
