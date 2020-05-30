@@ -93,7 +93,7 @@ architecture jump of JumpAgain is
 
 			signal heroX,enemyX: in std_logic_vector(9 downto 0);
 			signal heroY,enemyY: in std_logic_vector(8 downto 0);
-			signal enemy_exist: in std_logic;
+			signal enemy_exist, reverse_g: in std_logic;
 
 			signal readAddress: out std_logic_vector(15 downto 0);
 			signal readOutput: in std_logic_vector(8 downto 0);
@@ -123,7 +123,7 @@ architecture jump of JumpAgain is
 		keyLeft,keyRight,keyUp: in std_logic; -- "keyboard input"
 		curX,enemyX: out std_logic_vector(9 downto 0);
 		curY,enemyY: out std_logic_vector(8 downto 0);
-		enemy_exist: out std_logic;
+		enemy_exist,reverse_g: out std_logic;
 		num_of_map: out integer; -- which map?
 		mapReadAddress: out std_logic_vector(15 downto 0);
 		mapReadReturn: in std_logic_vector(8 downto 0)
@@ -170,6 +170,7 @@ architecture jump of JumpAgain is
 	signal imageColorOutput: std_logic_vector(8 downto 0);
 
 	signal num_of_map: integer;
+	signal reverseG: std_logic;
 	--signal crash_block: std_logic_vector(2 downto 0);
 begin
 	keyboard: KeyboardControl port map(ps2Data, ps2Clock, clock, reset, keyUp, keyDown, keyLeft, keyRight);
@@ -201,7 +202,7 @@ begin
 	--	crash_block,
 		num_of_map,
 		reset, renderClock,
-		heroX,enemyX, heroY,enemyY,enemy_exist,--"0000111111", "000111000", --hardcode heroX, heroY
+		heroX,enemyX, heroY,enemyY,enemy_exist,reverseG,--"0000111111", "000111000", --hardcode heroX, heroY
 		rendererReadAddress, rendererReadReturn,
 		videoWriteAddress, videoWriteContent,
 		imageReadAddress, imageColorOutput
@@ -211,7 +212,7 @@ begin
 
 	logic: logicloop port map(
 	clock, reset, keyLeft or sensorLeft, keyRight or sensorRight, keyUp or sensorUp,
-	heroX, enemyX, heroY, enemyY, enemy_exist,
+	heroX, enemyX, heroY, enemyY, enemy_exist,reverseG,
 	num_of_map, logicReadAddress, logicReadReturn);
 	videoMemory: video_memory port map(videoReadAddress, videoWriteAddress, clock, (others => '0'), videoWriteContent, '0', '1', videoColorOutput, open);
 

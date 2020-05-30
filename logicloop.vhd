@@ -12,7 +12,7 @@ entity logicloop is
 		keyLeft,keyRight,keyUp: in std_logic; -- "keyboard input"
 		curX,enemyX: out std_logic_vector(9 downto 0);
 		curY,enemyY: out std_logic_vector(8 downto 0);
-		enemy_exist: out std_logic;
+		enemy_exist, reverse_g: out std_logic;
 		num_of_map: out integer;  -- which map?
 		mapReadAddress: out std_logic_vector(15 downto 0);
 		mapReadReturn: in std_logic_vector(8 downto 0)
@@ -92,7 +92,7 @@ end component;
 	signal should_rev: std_logic;
 	signal queue_read_addr, queue_write_addr: unsigned(8 downto 0);
 	signal queue_write_data,queue_read_data: std_LOGIC_VECTOR(31 downto 0);
-	signal EnemyExist: std_logic;
+	signal EnemyExist,reverseG: std_logic;
 begin
 
 	curX <= heroX;
@@ -101,6 +101,7 @@ begin
 	enemyY <= enemy_Y;
 	num_of_map <= numofmap;
 	enemy_exist <= EnemyExist;
+	reverse_g <= reverseG;
 	xyq: xyqueue port map(
 		std_LOGIC_VECTOR(queue_read_addr), std_LOGIC_VECTOR(queue_write_addr), clk, 
 		(others => '0'), queue_write_data,
@@ -181,6 +182,7 @@ begin
 			reload_map <= '0';
 			EnemyExist <= '0';
 			reverse <= '0';
+			reverseG <= '0';
 			should_rev <= '0';
 		elsif  rising_edge(clk1) then -- 8 state, check 4 block in order. 0 state: request the block type 1 state: get the block type and try to issue signal
 			if clk3_sum = 500 then -- 5 second
@@ -196,6 +198,7 @@ begin
 				blockY <= 22;
 				reload_map <= '0';
 				reverse <= '0';
+				reverseG <= '0';
 				should_rev <= '0';
 			else
 			 reverse <= '0';
@@ -356,6 +359,7 @@ begin
 			when others => -- when 9
 					if should_rev = '1' then
 						reverse <= '1';
+						reverseG <= not reverseG;
 					end if;
 					if buf_equalY = '0' and crash_Y = '0' then
 						if buf_plusY = '1' then

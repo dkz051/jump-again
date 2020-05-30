@@ -14,7 +14,7 @@ entity Renderer is
 
 		signal heroX,enemyX: in std_logic_vector(9 downto 0);
 		signal heroY,enemyY: in std_logic_vector(8 downto 0);
-		signal enemy_exist: in std_logic;
+		signal enemy_exist,reverse_g: in std_logic;
 
 		signal readAddress: out std_logic_vector(15 downto 0);
 		signal readOutput: in std_logic_vector(8 downto 0);
@@ -156,7 +156,11 @@ begin
 					imageReadAddress <= std_logic_vector(to_unsigned(xy_400, 14)) + 1200;
 				when "100" =>
 					-- writeData <= "101001100";
-					imageReadAddress <= std_logic_vector(to_unsigned(xy_400, 14)) + 1600;
+					if reverse_g = '0' then
+						imageReadAddress <= std_logic_vector(to_unsigned(xy_400, 14)) + 1600;
+					else
+						imageReadAddress <= std_logic_vector(to_unsigned(xy_400, 14)) + 2000;
+					end if;
 				when others =>
 					-- writeData <= "000000000";
 					imageReadAddress <= std_logic_vector(to_unsigned(xy_400, 14));
