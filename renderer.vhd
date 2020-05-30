@@ -42,7 +42,7 @@ architecture Render of Renderer is
 	signal writeData: std_logic_vector(8 downto 0) := (others => '0');
 	signal lastData: std_logic_vector(2 downto 0); -- last data in a word, (2 downto 0)
 	signal firstData: std_logic_vector(2 downto 0); -- first data in a line
-
+	signal lastColor: std_logic_vector(8 downto 0);
 begin
 	readAddress <= readFrom;
 	writeAddress <= writeTo;
@@ -51,7 +51,8 @@ begin
 	process(reset, clock)
 	begin
 		if reset = '0' then
-			x <= (others => '0');
+			--x <= (others => '0');
+			x <= ((0)=>'1', others => '0'); -- (x,y): the pixel we are rendering (x,y) - 1: the pixel we are feeding to video memory (last Color)
 			y <= (others => '0');
 			x_20 <= 0;
 			y_20 <= 0;
@@ -63,6 +64,7 @@ begin
 			if x = 700 then
 				lastData <= readOutput(2 downto 0);
 			end if;
+			writeData <= lastColor;
 			if x < 640 and y < 480 then
 				if x = 639 and y = 479 then
 					readFrom_x0 <= std_logic_vector(to_unsigned(num_of_map * 256, 16));
@@ -92,7 +94,7 @@ begin
 					end if;
 				end if;
 			end if;
-
+			
 			if writeTo = ramLines * 800 - 1 then
 				writeTo <= (others => '0'); -- the video memory wrap back
 			else
@@ -168,21 +170,22 @@ begin
 	process(reset, imageColorOutput, x)
 	begin
 		if reset = '0' then
-			writeData <= (others => '0');
+			--writeData <= (others => '0');
+			lastColor <= (others => '0');
 		else
 			if x < 640 and y < 480 then -- inside the map
 				if  heroX > x or heroY > y or  x > heroX + 19 or  y > heroY + 19  then
 					if enemy_exist = '0' or enemyX > x or enemyY > y or x > enemyX + 19 or Y > enemyY + 19 then
-						writeData <= imageColorOutput;
+						lastColor <= imageColorOutput;
 					else
-						writeData <= "000000000"; -- black enemy
+						lastColor <= "000000000"; -- black enemy
 					end if;
 				else
-					writeData <= "000000111";
+					lastColor <= "000000111";
 				end if;
 			else
-				writeData <= (others => '0');
-			end if;
+				lastColor <= (others => '0');
+			end if; -- render a pixel, output it in the next pulse
 		end if;
 	end process;
 end architecture Render;

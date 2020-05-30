@@ -33,7 +33,7 @@ begin
 		if reset = '0' then
 			vector_x <= (others => '0');
 			vector_y <= (others => '0');
-			readFrom <= "00000000000001";
+			readFrom <= (others => '0');
 		elsif rising_edge(clock) then
 			if vector_x = 799 then
 				vector_x <= (others => '0');
