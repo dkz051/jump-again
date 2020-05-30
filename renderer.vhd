@@ -78,13 +78,17 @@ begin
 			heroMapNum <= "01000";
 		elsif rising_edge(SlowClock1) then
 		-- update heroMapNum according to directions
+		-- direction(2): face left / right direction(0 left, 1 right): "00" no movement "01" horizontal move "10" up "11" down
+			--direction(2) : face left / right
+			--direction(1) : whether move vertically
+			--direction(0): whether move horizontally/whether move upward
 			case directions is 
-				when "000" =>
-				when "001" =>
+				when "000" => -- face left, no move
+				when "001" => -- face left, horizontal
 				when "010" =>
 				when "011" =>
-				when "100" =>
-				when "101" =>
+				when "100" => -- face right, no move
+				when "101" => 
 				when "110" =>
 				when "111" =>
 			end case;
@@ -213,14 +217,14 @@ begin
 			--direction(1) : whether move vertically
 			--direction(0): whether move horizontally/whether move upward
 			
-			if y_20 > heroy_20 then 
-				if x_20 > herox_20 then
+			if y_20 < heroy_20 then 
+				if x_20 < herox_20 then
 					heroReadAddress <=  heroMapNum &  std_logic_vector(to_unsigned(20 + y_20 - heroy_20, 5)) & std_logic_vector(to_unsigned(20 + x_20 - herox_20, 5));
 				else
 					heroReadAddress <=  heroMapNum &  std_logic_vector(to_unsigned(20 + y_20 - heroy_20, 5)) & std_logic_vector(to_unsigned(x_20 - herox_20, 5));
 				end if;
 			else
-				if x_20 > herox_20 then
+				if x_20 < herox_20 then
 					heroReadAddress <=  heroMapNum &  std_logic_vector(to_unsigned(y_20 - heroy_20, 5)) & std_logic_vector(to_unsigned(20 + x_20 - herox_20, 5));
 				else
 					heroReadAddress <=  heroMapNum &  std_logic_vector(to_unsigned(y_20 - heroy_20, 5)) & std_logic_vector(to_unsigned(x_20 - herox_20, 5));
