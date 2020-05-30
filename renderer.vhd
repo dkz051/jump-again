@@ -43,6 +43,7 @@ architecture Render of Renderer is
 	signal writeData: std_logic_vector(8 downto 0) := (others => '0');
 	signal lastData: std_logic_vector(2 downto 0); -- last data in a word, (2 downto 0)
 	signal firstData: std_logic_vector(2 downto 0); -- first data in a line
+
 begin
 	readAddress <= readFrom;
 	writeAddress <= writeTo;
@@ -137,54 +138,46 @@ begin
 		end case;
 	end process;
 ------------------------connnect render result and video memory
-	process(reset,color_typ)
+	process(x)
+	begin
+		if x < 640 and y < 480 then -- inside the map
+			case color_typ is
+				when "000" => -- air
+					-- writeData <= "111111111";
+					imageReadAddress <= std_logic_vector(to_unsigned(xy_400, 14));
+				when "001" => -- brick
+					-- writedata <= "111000000";
+					imageReadAddress <= std_logic_vector(to_unsigned(xy_400, 14)) + 400;
+				when "010" => -- trap
+					-- writeData <= "000111000";
+					imageReadAddress <= std_logic_vector(to_unsigned(xy_400, 14)) + 800;
+				when "011" => -- destination
+					-- writeData <= "111111000";
+					imageReadAddress <= std_logic_vector(to_unsigned(xy_400, 14)) + 1200;
+				when "100" =>
+					-- writeData <= "101001100";
+					imageReadAddress <= std_logic_vector(to_unsigned(xy_400, 14)) + 1600;
+				when others =>
+					-- writeData <= "000000000";
+					imageReadAddress <= std_logic_vector(to_unsigned(xy_400, 14));
+			end case;
+		end if;
+	end process;
+	process(reset, imageColorOutput,x)
 	begin
 		if reset = '0' then
 			writeData <= (others => '0');
 		else
 			if x < 640 and y < 480 then -- inside the map
-			---	if x < 20 and y < 20 then
-			--		case crash_block is
-			--			when "000" =>
-			--				writeData <= "111111111";
-			--			when "001" =>
-			--				writedata <= "111000000";
-			--			when "010" =>
-			--				writeData <= "000111000";
-			--			when others =>
-			--				writeData <= "000111111";
-			--		end case;
-			--	else
-					if  heroX > x or heroY > y or  x > heroX + 19 or  y > heroY + 19  then
-						if enemy_exist = '0' or enemyX > x or enemyY > y or x > enemyX + 19 or Y > enemyY + 19 then
-							case color_typ is
-							when "000" => -- air
-								-- writeData <= "111111111";
-								imageReadAddress <= std_logic_vector(to_unsigned(xy_400, 14));
-							when "001" => -- brick
-								-- writedata <= "111000000";
-								imageReadAddress <= std_logic_vector(to_unsigned(xy_400, 14)) + 400;
-							when "010" => -- trap
-								-- writeData <= "000111000";
-								imageReadAddress <= std_logic_vector(to_unsigned(xy_400, 14)) + 800;
-							when "011" => -- destination
-								-- writeData <= "111111000";
-								imageReadAddress <= std_logic_vector(to_unsigned(xy_400, 14)) + 1200;
-							when "100" =>
-								-- writeData <= "101001100";
-								imageReadAddress <= std_logic_vector(to_unsigned(xy_400, 14)) + 1600;
-							when others =>
-								-- writeData <= "000000000";
-								imageReadAddress <= std_logic_vector(to_unsigned(xy_400, 14));
-							end case;
-							writeData <= imageColorOutput;
-						else
-							writeData <= "000000000"; -- black enemy
-						end if;
+				if  heroX > x or heroY > y or  x > heroX + 19 or  y > heroY + 19  then
+					if enemy_exist = '0' or enemyX > x or enemyY > y or x > enemyX + 19 or Y > enemyY + 19 then
+						writeData <= imageColorOutput;
 					else
-						writeData <= "000000111";
+						writeData <= "000000000"; -- black enemy
 					end if;
-			--	end if;
+				else
+					writeData <= "000000111";
+				end if;
 			else
 				writeData <= (others => '0');
 			end if;
