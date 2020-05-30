@@ -214,7 +214,7 @@ begin
 						queryX <= blockX + 1;
 						queryY <= blockY;
 					else  --move left
-						queryX <= blockX - 1;
+						queryX <= blockX;
 						queryY <= blockY;
 					end if;
 			 when 1 =>
@@ -244,7 +244,7 @@ begin
 						queryX <= blockX + 1;
 						queryY <= blockY + 1;
 					else --move left
-						queryX <= blockX - 1;
+						queryX <= blockX; -- move left
 						queryY <= blockY + 1;
 					end if;
 			when 3 => -- moveX ?
@@ -302,7 +302,7 @@ begin
 						queryY <= blockY + 1;
 					else --move up
 						queryX <= blockX;
-						queryY <= blockY - 1;
+						queryY <= blockY;
 					end if;
 			when 6 =>
 				if x_20 < 14 then
@@ -333,7 +333,7 @@ begin
 					queryY <= blockY + 1;
 				else --move up
 					queryX <= blockX + 1;
-					queryY <= blockY - 1;
+					queryY <= blockY;
 				end if;
 			when 8 =>
 				if x_20 > 6 then
