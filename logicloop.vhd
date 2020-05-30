@@ -184,7 +184,7 @@ begin
 			reverse <= '0';
 			should_rev <= '0';
 		elsif  rising_edge(clk1) then -- 8 state, check 4 block in order. 0 state: request the block type 1 state: get the block type and try to issue signal
-			if clk3_sum = 500 then -- 5 second
+			if clk3_sum = 515 then -- 5 second
 				EnemyExist <= '1';
 			end if;
 			if reload_map = '1' then
