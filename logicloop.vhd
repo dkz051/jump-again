@@ -388,6 +388,7 @@ begin
 					if EnemyExist = '1' then
 						if enemy_X  < 20 + heroX and heroX  < 20 + enemy_X and enemy_Y  < 20 + heroY and heroY  < 20 + enemy_Y then
 							reload_map <= '1';
+							EnemyExist <= '0';
 						end if;
 					end if;
 			end case;				
