@@ -14,7 +14,7 @@ entity mover is
 		clk, rst: in std_logic; -- clk is very important for this component
 		keyLeft, keyUp, keyRight, crash_Y, crash_down, reverse, reload_map: in std_logic; -- delta_Y is ignored, consider equalY as '1', speed_Y set to 0
 
-		equalX, equalY, plusX, plusY: out std_logic  -- equalX: X+=0 plusX: X+=1(move right) plusY: Y+=1(move down)
+		equalX, equalY, plusX, plusY,revG: out std_logic  -- equalX: X+=0 plusX: X+=1(move right) plusY: Y+=1(move down)
 		
 	    -- delta X, Y, need to be modified by crach checker
 	    ); -- when rst, set speed_y to 0, then free falling
@@ -29,6 +29,7 @@ signal buf_plusY: std_logic;
 signal canjump1,canjump2: std_logic;
 signal reverse_g: std_logic;
 begin
+	revG <= reverse_g;
 	process(rst,reload_map, reverse) is
 	begin
 		if rst = '0' or reload_map = '1' then

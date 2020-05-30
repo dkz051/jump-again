@@ -54,7 +54,7 @@ architecture logic of logicloop is
 		clk, rst: in std_logic; -- clk is very important for this component!
 		keyLeft, keyUp, keyRight,crash_Y, crash_down, reverse, reload_map: in std_logic;
 		--crash_Y: in std_logic; -- crash into brick in y direction, delta Y is not applied to heroY, set speed_y to 0
-		equalX, equalY, plusX, plusY: out std_logic  -- equalX: X+=0 plusX: X+=1(move right) plusY: Y+=1(move down)
+		equalX, equalY, plusX, plusY,revG: out std_logic  -- equalX: X+=0 plusX: X+=1(move right) plusY: Y+=1(move down)
 		-- only when delta X, Y makes hero "rush into" brick, we consider it as "crashed". 
 	    -- delta X, Y, need to be modified by crach checker
 	    ); -- when rst, set speed_y to 0, then free falling
@@ -108,7 +108,7 @@ begin
 		'0', '1', 
 		queue_read_data,open);
 	readmap: reader port map(numofmap,clk, mapReadAddress,mapReadReturn,queryX,queryY,ans_type); 
-	move: mover port map(clk2, rst, keyLeft, keyUp, keyRight,crash_Y,crash_down,reverse,reload_map, equalX, equalY, plusX, plusY);
+	move: mover port map(clk2, rst, keyLeft, keyUp, keyRight,crash_Y,crash_down,reverse,reload_map, equalX, equalY, plusX, plusY, reverseG);
 	process(clk,rst)
 	begin
 		if rst = '0' then
@@ -182,7 +182,6 @@ begin
 			reload_map <= '0';
 			EnemyExist <= '0';
 			reverse <= '0';
-			reverseG <= '0';
 			should_rev <= '0';
 		elsif  rising_edge(clk1) then -- 8 state, check 4 block in order. 0 state: request the block type 1 state: get the block type and try to issue signal
 			if clk3_sum = 500 then -- 5 second
@@ -198,7 +197,6 @@ begin
 				blockY <= 22;
 				reload_map <= '0';
 				reverse <= '0';
-				reverseG <= '0';
 				should_rev <= '0';
 			else
 			 reverse <= '0';
@@ -359,7 +357,6 @@ begin
 			when others => -- when 9
 					if should_rev = '1' then
 						reverse <= '1';
-						reverseG <= not reverseG;
 					end if;
 					if buf_equalY = '0' and crash_Y = '0' then
 						if buf_plusY = '1' then
