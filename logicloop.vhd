@@ -366,6 +366,8 @@ begin
 									y_20 <= 0;
 									if blockY = 22 then -- bottom death
 										reload_map <= '1';
+										EnemyExist <= '0';
+
 									end if;
 									blockY <= blockY + 1;
 									
