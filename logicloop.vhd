@@ -385,7 +385,7 @@ begin
 			when others => -- when 9
 					if rev_counter = 0 and should_rev = '1' then
 						reverse <= '1';
-						rev_counter <= 500;
+						rev_counter <= 1500;
 					end if;
 					if buf_equalY = '0' and crash_Y = '0' then
 						if buf_plusY = '1' then
