@@ -101,7 +101,7 @@ architecture jump of JumpAgain is
 			signal writeAddress: out std_logic_vector(13 downto 0);
 			signal writeContent: out std_logic_vector(8 downto 0);
 
-			signal imageReadAddress: out std_logic_vector(13 downto 0);
+			signal imageReadAddress: out std_logic_vector(14 downto 0);
 			signal imageColorOutput: in std_logic_vector(8 downto 0)
 		);
 	end component Renderer;
@@ -135,7 +135,7 @@ architecture jump of JumpAgain is
 
 	component images
 		port(
-			address: in std_logic_vector(13 downto 0);
+			address: in std_logic_vector(14 downto 0);
 			clock: in std_logic := '1';
 			data: in std_logic_vector(8 downto 0);
 			wren: in std_logic;
@@ -166,7 +166,7 @@ architecture jump of JumpAgain is
 	signal videoWriteAddress: std_logic_vector(13 downto 0);
 	signal videoWriteContent: std_logic_vector(8 downto 0);
 
-	signal imageReadAddress: std_logic_vector(13 downto 0);
+	signal imageReadAddress: std_logic_vector(14 downto 0);
 	signal imageColorOutput: std_logic_vector(8 downto 0);
 
 	signal num_of_map: integer;

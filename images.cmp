@@ -16,7 +16,7 @@
 component images
 	PORT
 	(
-		address		: IN STD_LOGIC_VECTOR (13 DOWNTO 0);
+		address		: IN STD_LOGIC_VECTOR (14 DOWNTO 0);
 		clock		: IN STD_LOGIC  := '1';
 		data		: IN STD_LOGIC_VECTOR (8 DOWNTO 0);
 		wren		: IN STD_LOGIC ;

@@ -22,7 +22,7 @@ entity Renderer is
 		signal writeAddress: out std_logic_vector(13 downto 0);
 		signal writeContent: out std_logic_vector(8 downto 0);
 
-		signal imageReadAddress: out std_logic_vector(13 downto 0);
+		signal imageReadAddress: out std_logic_vector(14 downto 0);
 		signal imageColorOutput: in std_logic_vector(8 downto 0)
 	);
 end entity Renderer;
@@ -34,7 +34,6 @@ architecture Render of Renderer is
 	signal y: std_logic_vector(9 downto 0) := (others => '0');
 	signal color_typ: std_logic_vector(2 downto 0):= (others => '0');
 	signal x_20, y_20: integer range 0 to 19; -- x%20, y%20, maintained by increment
-	signal xy_400: integer range 0 to 399; -- (x + y * 20) % 400, maintained by increment
 	signal cnt3_x0: integer;
 	signal cnt3: integer;
 	signal readFrom: std_logic_vector(15 downto 0) := (others => '0');
@@ -48,7 +47,6 @@ begin
 	readAddress <= readFrom;
 	writeAddress <= writeTo;
 	writeContent <= writeData;
-	xy_400 <= x_20 + y_20 * 20;
 
 	process(reset, clock)
 	begin
@@ -137,37 +135,37 @@ begin
 					color_typ <= lastData;
 		end case;
 	end process;
-------------------------connnect render result and video memory
+------------------------connect render result and video memory
 	process(x)
 	begin
 		if x < 640 and y < 480 then -- inside the map
 			case color_typ is
 				when "000" => -- air
 					-- writeData <= "111111111";
-					imageReadAddress <= std_logic_vector(to_unsigned(xy_400, 14));
+					imageReadAddress <= "00000" & std_logic_vector(to_unsigned(y_20, 5)) & std_logic_vector(to_unsigned(x_20, 5));
 				when "001" => -- brick
 					-- writedata <= "111000000";
-					imageReadAddress <= std_logic_vector(to_unsigned(xy_400, 14)) + 400;
+					imageReadAddress <= "00001" & std_logic_vector(to_unsigned(y_20, 5)) & std_logic_vector(to_unsigned(x_20, 5));
 				when "010" => -- trap
 					-- writeData <= "000111000";
-					imageReadAddress <= std_logic_vector(to_unsigned(xy_400, 14)) + 800;
+					imageReadAddress <= "00010" & std_logic_vector(to_unsigned(y_20, 5)) & std_logic_vector(to_unsigned(x_20, 5));
 				when "011" => -- destination
 					-- writeData <= "111111000";
-					imageReadAddress <= std_logic_vector(to_unsigned(xy_400, 14)) + 1200;
+					imageReadAddress <= "00011" & std_logic_vector(to_unsigned(y_20, 5)) & std_logic_vector(to_unsigned(x_20, 5));
 				when "100" =>
 					-- writeData <= "101001100";
 					if reverse_g = '0' then
-						imageReadAddress <= std_logic_vector(to_unsigned(xy_400, 14)) + 1600;
+						imageReadAddress <= "00100" & std_logic_vector(to_unsigned(y_20, 5)) & std_logic_vector(to_unsigned(x_20, 5));
 					else
-						imageReadAddress <= std_logic_vector(to_unsigned(xy_400, 14)) + 2000;
+						imageReadAddress <= "00101" & std_logic_vector(to_unsigned(y_20, 5)) & std_logic_vector(to_unsigned(x_20, 5));
 					end if;
 				when others =>
 					-- writeData <= "000000000";
-					imageReadAddress <= std_logic_vector(to_unsigned(xy_400, 14));
+					imageReadAddress <= (others => '0');
 			end case;
 		end if;
 	end process;
-	process(reset, imageColorOutput,x)
+	process(reset, imageColorOutput, x)
 	begin
 		if reset = '0' then
 			writeData <= (others => '0');
