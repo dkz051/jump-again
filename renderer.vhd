@@ -56,7 +56,7 @@ begin
 			x_20 <= 0;
 			y_20 <= 0;
 			readFrom <= std_logic_vector(to_unsigned(num_of_map * 256, 16));
-			writeTo <= (others => '0');
+			--writeTo <= (others => '0');
 			readFrom_x0 <= std_logic_vector(to_unsigned(num_of_map * 256, 16));
 			cnt3_x0 <= 0;
 		elsif rising_edge(clock) then
@@ -93,11 +93,7 @@ begin
 				end if;
 			end if;
 
-			if writeTo = ramLines * 800 - 1 then
-				writeTo <= (others => '0'); -- the video memory wrap back
-			else
-				writeTo <= writeTo + 1;
-			end if;
+			
 
 ------------------- update x, y, x %= 800 y%=525 x_20 = x%20, y_20 = y%20
 			if x = 799 then
@@ -169,7 +165,13 @@ begin
 	begin
 		if reset = '0' then
 			writeData <= (others => '0');
+			writeTo <= (others => '0');
 		else
+			if writeTo = ramLines * 800 - 1 then
+				writeTo <= (others => '0'); -- the video memory wrap back
+			else
+				writeTo <= writeTo + 1;
+			end if;
 			if x < 640 and y < 480 then -- inside the map
 				if  heroX > x or heroY > y or  x > heroX + 19 or  y > heroY + 19  then
 					if enemy_exist = '0' or enemyX > x or enemyY > y or x > enemyX + 19 or Y > enemyY + 19 then
