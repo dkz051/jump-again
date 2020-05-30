@@ -23,7 +23,13 @@ entity Renderer is
 		signal writeContent: out std_logic_vector(8 downto 0);
 
 		signal imageReadAddress: out std_logic_vector(14 downto 0);
-		signal imageColorOutput: in std_logic_vector(8 downto 0)
+		signal imageColorOutput: in std_logic_vector(8 downto 0);
+		
+		signal heroReadAddress: out std_logic_vector(14 downto 0);
+		signal heroColorOutput: in std_logic_vector(8 downto 0);
+		
+		signal directions: in std_LOGIC_VECTOR(3 downto 0);
+		signal herox_20, heroy_20: in integer
 	);
 end entity Renderer;
 
@@ -33,7 +39,7 @@ architecture Render of Renderer is
 	signal x: std_logic_vector(9 downto 0) := (others => '0');
 	signal y: std_logic_vector(9 downto 0) := (others => '0');
 	signal color_typ: std_logic_vector(2 downto 0):= (others => '0');
-	signal x_20, y_20: integer range 0 to 19; -- x%20, y%20, maintained by increment
+	signal x_20, y_20: integer; -- x%20, y%20, maintained by increment
 	signal cnt3_x0: integer;
 	signal cnt3: integer;
 	signal readFrom: std_logic_vector(15 downto 0) := (others => '0');
@@ -43,6 +49,7 @@ architecture Render of Renderer is
 	signal lastData: std_logic_vector(2 downto 0); -- last data in a word, (2 downto 0)
 	signal firstData: std_logic_vector(2 downto 0); -- first data in a line
 	signal lastColor: std_logic_vector(8 downto 0);
+	signal heroMapNum: std_logic_vector(4 downto 0);
 begin
 	readAddress <= readFrom;
 	writeAddress <= writeTo;
@@ -60,6 +67,7 @@ begin
 			writeTo <= (others => '0');
 			readFrom_x0 <= std_logic_vector(to_unsigned(num_of_map * 256, 16));
 			cnt3_x0 <= 0;
+			heroMapNum <= "01000";
 		elsif rising_edge(clock) then
 			if x = 700 then
 				lastData <= readOutput(2 downto 0);
@@ -165,6 +173,9 @@ begin
 					-- writeData <= "000000000";
 					imageReadAddress <= (others => '0');
 			end case;
+			
+			heroReadAddress <=  heroMapNum &  std_logic_vector(to_unsigned(20 + heroy_20 - y_20, 5)) & std_logic_vector(to_unsigned(20 + herox_20 - x_20, 5));
+			-- assign heroReadAddress
 		end if;
 	end process;
 	process(reset, imageColorOutput, x)
@@ -174,16 +185,16 @@ begin
 			lastColor <= (others => '0');
 		else
 			if x < 640 and y < 480 then -- inside the map
-				if  heroX + 6 > x or heroY + 7 > y or  x > heroX + 14 or  y > heroY + 19  then
+				if  heroColorOutput = "000000000" or heroX + 0 > x or heroY + 0 > y or  x > heroX + 19 or  y > heroY + 19  then
 					if enemy_exist = '0' or enemyX + 6 > x or enemyY + 7 > y or x > enemyX + 14 or Y > enemyY + 19 then
 			--	if  heroX > x or heroY > y or  x > heroX + 19 or  y > heroY + 19  then
 			--		if enemy_exist = '0' or enemyX > x or enemyY > y or x > enemyX + 19 or Y > enemyY + 19 then
-						lastColor <= imageColorOutput;
+						lastColor <= imageColorOutput; -- map
 					else
 						lastColor <= "000000000"; -- black enemy
 					end if;
 				else
-					lastColor <= "000000111";
+					lastColor <= heroColorOutput;
 				end if;
 			else
 				lastColor <= (others => '0');

@@ -15,7 +15,9 @@ entity logicloop is
 		enemy_exist, reverse_g: out std_logic;
 		num_of_map: out integer;  -- which map?
 		mapReadAddress: out std_logic_vector(15 downto 0);
-		mapReadReturn: in std_logic_vector(8 downto 0)
+		mapReadReturn: in std_logic_vector(8 downto 0);
+		move_direction: out std_logic_vector(3 downto 0);
+		herox_20, heroy_20: out integer
 		-- if there's no moving parts other than hero, if the status of grid won't change, then,
 		-- (X,Y) of hero and number of map, is enough to send to VGA control module
 		-- consider 4 block: the block contain "left-right" point (heroX, heroY)
@@ -102,6 +104,8 @@ begin
 	num_of_map <= numofmap;
 	enemy_exist <= EnemyExist;
 	reverse_g <= reverseG;
+	herox_20 <= x_20;
+	heroy_20 <= y_20;
 	xyq: xyqueue port map(
 		std_LOGIC_VECTOR(queue_read_addr), std_LOGIC_VECTOR(queue_write_addr), clk, 
 		(others => '0'), queue_write_data,

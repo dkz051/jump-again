@@ -102,7 +102,13 @@ architecture jump of JumpAgain is
 			signal writeContent: out std_logic_vector(8 downto 0);
 
 			signal imageReadAddress: out std_logic_vector(14 downto 0);
-			signal imageColorOutput: in std_logic_vector(8 downto 0)
+			signal imageColorOutput: in std_logic_vector(8 downto 0);
+			
+			signal heroReadAddress: out std_logic_vector(14 downto 0);
+			signal heroColorOutput: in std_logic_vector(8 downto 0);
+			
+			signal directions: in std_LOGIC_VECTOR(3 downto 0);
+			signal herox_20, heroy_20: in integer
 		);
 	end component Renderer;
 
@@ -126,7 +132,9 @@ architecture jump of JumpAgain is
 		enemy_exist,reverse_g: out std_logic;
 		num_of_map: out integer; -- which map?
 		mapReadAddress: out std_logic_vector(15 downto 0);
-		mapReadReturn: in std_logic_vector(8 downto 0)
+		mapReadReturn: in std_logic_vector(8 downto 0);
+		move_direction: out std_logic_vector(3 downto 0);
+		herox_20, heroy_20: out integer
 
 		-- if there's no moving parts other than hero, if the status of grid won't change, then,
 		-- (X,Y) of hero and number of map, is enough to send to VGA control module
@@ -171,8 +179,16 @@ end component;
 	signal imageReadAddress: std_logic_vector(14 downto 0);
 	signal imageColorOutput: std_logic_vector(8 downto 0);
 
+	signal heroReadAddress: std_logic_vector(14 downto 0);
+	signal heroColorOutput: std_logic_vector(8 downto 0);
+
+	signal directions: std_logic_vector(3 downto 0);
+	
 	signal num_of_map: integer;
 	signal reverseG: std_logic;
+	
+	signal herox_20, heroy_20: integer;
+
 	--signal crash_block: std_logic_vector(2 downto 0);
 begin
 	keyboard: KeyboardControl port map(ps2Data, ps2Clock, clock, reset, keyUp, keyDown, keyLeft, keyRight);
@@ -207,15 +223,21 @@ begin
 		heroX,enemyX, heroY,enemyY,enemy_exist,reverseG,--"0000111111", "000111000", --hardcode heroX, heroY
 		rendererReadAddress, rendererReadReturn,
 		videoWriteAddress, videoWriteContent,
-		imageReadAddress, imageColorOutput
+		imageReadAddress, imageColorOutput,
+		heroReadAddress,heroColorOutput,
+		directions,
+		herox_20, heroy_20
 	);
 
-	image: images port map(imageReadAddress,(others => '0'), clock, imageColorOutput, open);
+	image: images port map(imageReadAddress,heroReadAddress, clock, imageColorOutput, heroColorOutput);
 
 	logic: logicloop port map(
 	clock, reset, keyLeft or sensorLeft, keyRight or sensorRight, keyUp or sensorUp,
 	heroX, enemyX, heroY, enemyY, enemy_exist,reverseG,
-	num_of_map, logicReadAddress, logicReadReturn);
+	num_of_map, logicReadAddress, logicReadReturn,
+	directions,
+	herox_20, heroy_20
+	);
 	videoMemory: video_memory port map(videoReadAddress, videoWriteAddress, clock, (others => '0'), videoWriteContent, '0', '1', videoColorOutput, open);
 
 	dataMemory: data port map(rendererReadAddress, logicReadAddress, clock, (others => '0'), (others => '0'), '0', '0', rendererReadReturn, logicReadReturn);
