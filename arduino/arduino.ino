@@ -1,74 +1,85 @@
-#include <SimpleKalmanFilter.h>
-
 #include <SoftwareSerial.h>
 
 #include "Wire.h"
 #include "I2Cdev.h"
 #include "MPU6050.h"
 
-#define DEBUG
-
 SoftwareSerial hc12(4, 5);
-SimpleKalmanFilter kf_ax(0.2, 0.2, 0.01), kf_ay(0.2, 0.2, 0.01), kf_az(0.2, 0.2, 0.01);
 MPU6050 accelgyro;
 
 const float pi = acos(-1.0);
 
-float oax = 0, oay = 0, oaz = 0; // 'o' stands for 'offset'
-// float ogx = 0, ogy = 0, ogz = 0;
+float oax, oay, oaz; // 'o' stands for 'offset'
+float ogx, ogy, ogz;
 
-float vel_x = 0.0, vel_y = 0.0, vel_z = 0.0; // velocity
-float disp_x = 0.0, disp_y = 0.0, disp_z = 0.0; // displacement
+float rot_y;
 
-//float gravity;
+const int samples = 10;
+const int initCount = 500;
 
-long lastMicros;
+int lastMicros;
+
+bool blinkLed;
 
 // Returns acceleration, as a multiple of g (gravitational acceleration)
 void getAcceleration(float &rrax, float &rray, float &rraz) {
   int16_t ax, ay, az;
-  float rax, ray, raz;
-  accelgyro.getAcceleration(&ax, &ay, &az);
-  rax = ax / 16384.0;
-  ray = ay / 16384.0;
-  raz = az / 16384.0;
-  rrax = kf_ax.updateEstimate(rax);
-  rray = kf_ay.updateEstimate(ray);
-  rraz = kf_az.updateEstimate(raz);
+  float rax = 0.0, ray = 0.0, raz = 0.0;
+  for (int i = 0; i < samples; ++i) {
+    accelgyro.getAcceleration(&ax, &ay, &az);
+    rax += ax;
+    ray += ay;
+    raz += az;
+  }
+  rrax = rax / (samples * 16384.0);
+  rray = ray / (samples * 16384.0);
+  rraz = raz / (samples * 16384.0);
+}
+
+void getRotation(float &rrgx, float &rrgy, float &rrgz) {
+  int16_t gx, gy, gz;
+  float rgx = 0.0, rgy = 0.0, rgz = 0.0;
+  for (int i = 0; i < samples; ++i) {
+    accelgyro.getRotation(&gx, &gy, &gz);
+    rgx += gx;
+    rgy += gy;
+    rgz += gz;
+  }
+  rrgx = rgx / (samples * 131.0);
+  rrgy = rgy / (samples * 131.0);
+  rrgz = rgz / (samples * 131.0);
 }
 
 void initSensor() {
-  const int samples = 1000;
+  oax = oay = oaz = ogx = ogy = ogz = 0.0;
 
-  for (int i = 0; i < samples; ++i) {
-    float fax, fay, faz;
-//    accelgyro.getAcceleration(&ax, &ay, &az);
+  for (int i = 0; i < initCount; ++i) {
+    float fax, fay, faz, fgx, fgy, fgz;
     getAcceleration(fax, fay, faz);
+    getRotation(fgx, fgy, fgz);
     oax += fax, oay += fay, oaz += faz;
+    ogx += fgx, ogy += fgy, ogz += fgz;
+    Serial.print("Init: ");
+    Serial.print(i);
+    Serial.print("/");
+    Serial.println(initCount);
   }
 
-  Serial.print("Init: acceleration offset = (");
-  Serial.print(oax, 3);
-  Serial.print(", ");
-  Serial.print(oay, 3);
-  Serial.print(", ");
-  Serial.print(oaz, 3);
-  Serial.println(")");
-
-  oax /= samples, oay /= samples, oaz /= samples;
-
-  Serial.print("Init: acceleration offset = (");
-  Serial.print(oax, 3);
-  Serial.print(", ");
-  Serial.print(oay, 3);
-  Serial.print(", ");
-  Serial.print(oaz, 3);
-  Serial.println(")");
-
-//  gravity = sqrt(oax * oax + oay * oay + oaz * oaz);
+  oax /= initCount;
+  oay /= initCount;
+  oaz /= initCount;
+  
+  ogx /= initCount;
+  ogy /= initCount;
+  ogz /= initCount;
 }
 
 void setup() {
+  // HC-12 wireless module setup
+  pinMode(4, INPUT);
+  pinMode(5, OUTPUT);
+  hc12.begin(9600);
+  
   // join I2C bus (I2Cdev library doesn't do this automatically)
   Wire.begin();
 
@@ -83,64 +94,59 @@ void setup() {
   Serial.println("Testing device connections...");
   Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
 
-  // HC-12 wireless module setup
-  pinMode(4, INPUT);
-  pinMode(5, OUTPUT);
-  hc12.begin(9600);
-
   // sensor calibration
   initSensor();
 
-  // timer
+  rot_y = 0.0;
   lastMicros = micros();
+
+  // LED
+  pinMode(LED_BUILTIN, OUTPUT);
+  blinkLed = false;
 }
 
 void loop() {
-//  int16_t ax, ay, az;
-//  accelgyro.getAcceleration(&ax, &ay, &az);
-  float ax, ay, az;
+  float ax, ay, az, gx, gy, gz;
+  Serial.println("New loop");
   getAcceleration(ax, ay, az);
+  Serial.println("Got acceleration");
+  getRotation(gx, gy, gz);
+  Serial.println("Got rotation");
 
-  // acceleration, in meters per square second
-  float a_x = ax - oax;
-  float a_y = ay - oay;
   float a_z = az - oaz;
+  float g_y = gy - ogy;
 
-  long thisMicros = micros();
-  if (thisMicros == lastMicros) {
-    return;
-  }
-  
-  float interval = (thisMicros - lastMicros) / 1e6;
-
-  disp_x += interval * (vel_x + 0.5 * a_x * interval);
-  disp_y += interval * (vel_y + 0.5 * a_y * interval);
-  disp_z += interval * (vel_z + 0.5 * a_z * interval);
-  
-  vel_x += a_x * interval;
-  vel_y += a_y * interval;
-  vel_z += a_z * interval;
-
-  Serial.print("a = (");
-  Serial.print(a_x, 3);
-  Serial.print(", ");
-  Serial.print(a_y, 3);
-  Serial.print(", ");
-  Serial.print(a_z, 3);
-  Serial.print("), v = (");
-  Serial.print(vel_x, 3);
-  Serial.print(", ");
-  Serial.print(vel_y, 3);
-  Serial.print(", ");
-  Serial.print(vel_z, 3);
-  Serial.print("), x = (");
-  Serial.print(disp_x, 3);
-  Serial.print(", ");
-  Serial.print(disp_y, 3);
-  Serial.print(", ");
-  Serial.print(disp_z, 3);
-  Serial.println(")");
-
+  int thisMicros = micros();
+  rot_y += g_y * (thisMicros - lastMicros) / 1e6;
   lastMicros = thisMicros;
-  delay(15);
+
+  int8_t data = 0x0;
+
+  Serial.print(a_z, 3);
+  Serial.print("\t\t");
+  Serial.print(rot_y, 3);
+
+  if (a_z > 0.9) {
+    data |= 0x8;
+    Serial.print("\t\tU");
+  } else {
+    Serial.print("\t\t-");
+  }
+
+  if (rot_y < -5.0) {
+    data |= 0x1;
+    Serial.println("R");
+  } else if (rot_y > 5.0) {
+    data |= 0x2;
+    Serial.println("L");
+  } else {
+    Serial.println("-");
+  }
+
+  blinkLed = !blinkLed;
+  digitalWrite(LED_BUILTIN, blinkLed);
+  
+  hc12.print(data);
+
+  delay(20);
 }
