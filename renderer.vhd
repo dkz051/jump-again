@@ -24,10 +24,10 @@ entity Renderer is
 
 		signal imageReadAddress: out std_logic_vector(14 downto 0);
 		signal imageColorOutput: in std_logic_vector(8 downto 0);
-		
+
 		signal heroReadAddress: out std_logic_vector(14 downto 0);
 		signal heroColorOutput: in std_logic_vector(8 downto 0);
-		
+
 		signal directions: in std_LOGIC_VECTOR(2 downto 0);
 		signal herox_20, heroy_20: in integer
 	);
@@ -52,6 +52,7 @@ architecture Render of Renderer is
 	signal heroMapNum: std_logic_vector(4 downto 0);
 	signal SlowClock1,SlowClock2: std_logic;
 	signal slow_counter: integer;
+	signal slow_count2,slow_count4: integer;
 begin
 	readAddress <= readFrom;
 	writeAddress <= writeTo;
@@ -62,11 +63,23 @@ begin
 			slow_counter <= 0;
 			SlowClock1 <= '0';
 			SlowClock2 <= '0';
+			slow_count2 <= 0;
+			slow_count4 <= 0;
 		elsif rising_edge(clock) then
 			if slow_counter = 3125000 then
 				slow_counter <= 0;
 				SlowClock1 <= not SlowClock1; -- 4Hz
 				SlowClock2 <= SlowClock2 xor SlowClock1; -- 2Hz
+				if slow_count2 = 1 then
+					slow_count2 <= 0;
+				else
+					slow_count2 <= 1;
+				end if;
+				if slow_count4 = 3 then
+					slow_count4 <= 0;
+				else
+					slow_count4 <= slow_count4 + 1;
+				end if;
 			else
 				slow_counter <= slow_counter + 1;
 			end if;
@@ -83,14 +96,78 @@ begin
 			--direction(1) : whether move vertically
 			--direction(0): whether move horizontally/whether move upward
 			case directions is 
-				when "000" => -- face left, no move
-				when "001" => -- face left, horizontal
-				when "010" =>
-				when "011" =>
 				when "100" => -- face right, no move
-				when "101" => 
-				when "110" =>
-				when "111" =>
+					case slow_count4 is
+						when 0 =>
+							heroMapNum <= "01000";
+						when 1 =>
+							heroMapNum <= "01001";
+						when 2 =>
+							heroMapNum <= "01010";
+						when others =>
+							heroMapNum <= "01011";
+					end case;
+				when "101" => -- face right, horizontal
+					case slow_count4 is
+						when 0 =>
+							heroMapNum <= "01100";
+						when 1 =>
+							heroMapNum <= "01101";
+						when 2 =>
+							heroMapNum <= "01110";
+						when others =>
+							heroMapNum <= "01111";
+					end case; 
+				when "111" => -- face right, move down 
+					case slow_count2 is
+						when 0 =>
+							heroMapNum <= "10000";
+						when others =>
+							heroMapNum <= "10001";
+					end case;
+				when "110" => -- face right, move up
+					case slow_count2 is
+						when 0 =>
+							heroMapNum <= "10010";
+						when others =>
+							heroMapNum <= "10011";
+					end case;
+				when "000" => -- face left, no move
+					case slow_count4 is
+						when 0 =>
+							heroMapNum <= "10100";
+						when 1 =>
+							heroMapNum <= "10101";
+						when 2 =>
+							heroMapNum <= "10110";
+						when others =>
+							heroMapNum <= "10111";
+					end case;
+				when "001" => 
+					case slow_count4 is
+						when 0 =>
+							heroMapNum <= "11000";
+						when 1 =>
+							heroMapNum <= "11001";
+						when 2 =>
+							heroMapNum <= "11010";
+						when others =>
+							heroMapNum <= "11011";
+					end case;
+				when "011" =>
+					case slow_count2 is
+						when 0 =>
+							heroMapNum <= "11100";
+						when others =>
+							heroMapNum <= "11101";
+					end case;
+				when "010" =>
+					case slow_count2 is
+						when 0 =>
+							heroMapNum <= "11110";
+						when others =>
+							heroMapNum <= "11111";
+					end case;
 			end case;
 		end if;
 	end process;
@@ -140,7 +217,7 @@ begin
 					end if;
 				end if;
 			end if;
-			
+
 			if writeTo = ramLines * 800 - 1 then
 				writeTo <= (others => '0'); -- the video memory wrap back
 			else
@@ -211,21 +288,20 @@ begin
 					-- writeData <= "000000000";
 					imageReadAddress <= (others => '0');
 			end case;
-			
+
 			-- direction(2): face left / right direction(1,0): "00" no movement "01" horizontal move "10" up "11" down
 			--direction(2) : face left / right
 			--direction(1) : whether move vertically
 			--direction(0): whether move horizontally/whether move upward
-			
-			if y_20 < heroy_20 then 
-				if x_20 < herox_20 then
-					heroReadAddress <=  heroMapNum &  std_logic_vector(to_unsigned(20 + y_20 - heroy_20, 5)) & std_logic_vector(to_unsigned(20 + x_20 - herox_20, 5));
+			if y_20 >= heroy_20 then
+				if x_20 >= herox_20 then
+					heroReadAddress <=  heroMapNum &  std_logic_vector(to_unsigned(20 + heroy_20 - y_20, 5)) & std_logic_vector(to_unsigned(20 + herox_20 - x_20, 5));
 				else
 					heroReadAddress <=  heroMapNum &  std_logic_vector(to_unsigned(20 + y_20 - heroy_20, 5)) & std_logic_vector(to_unsigned(x_20 - herox_20, 5));
 				end if;
 			else
-				if x_20 < herox_20 then
-					heroReadAddress <=  heroMapNum &  std_logic_vector(to_unsigned(y_20 - heroy_20, 5)) & std_logic_vector(to_unsigned(20 + x_20 - herox_20, 5));
+				if x_20 >= herox_20 then
+					heroReadAddress <=  heroMapNum &  std_logic_vector(to_unsigned(heroy_20 - y_20, 5)) & std_logic_vector(to_unsigned(20 + herox_20 - x_20, 5));
 				else
 					heroReadAddress <=  heroMapNum &  std_logic_vector(to_unsigned(y_20 - heroy_20, 5)) & std_logic_vector(to_unsigned(x_20 - herox_20, 5));
 				end if;
