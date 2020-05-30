@@ -28,14 +28,17 @@ signal last_keyUp: std_logic;
 signal buf_plusY: std_logic;
 signal canjump1,canjump2: std_logic;
 signal reverse_g: std_logic;
+signal rev: std_logic;
 begin
 	revG <= reverse_g;
 	process(rst,reload_map, reverse) is
 	begin
 		if rst = '0' or reload_map = '1' then
 			reverse_g <= '0';
+			rev <= '0';
 		elsif rising_edge(reverse) then
 			reverse_g <= not reverse_g;
+			rev <= '1';
 		end if;
 	end process;
 	process(clk,rst, reload_map) is  -- 500Hz
@@ -116,6 +119,12 @@ begin
 				equalY <= '1';
 				time_accumu_y <= time_accumu_y + 1;
 				product <= product + speed_y;
+			end if;
+			
+			if rev = '1' then
+				equalY <= '0';
+				plusY <= not reverse_g;
+				buf_plusY <= not reverse_g;
 			end if;
 			last_keyUp <= keyUp;
 		end if;
