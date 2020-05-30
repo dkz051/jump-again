@@ -24,10 +24,10 @@ entity Renderer is
 
 		signal imageReadAddress: out std_logic_vector(14 downto 0);
 		signal imageColorOutput: in std_logic_vector(8 downto 0);
-		
+
 		signal heroReadAddress: out std_logic_vector(14 downto 0);
 		signal heroColorOutput: in std_logic_vector(8 downto 0);
-		
+
 		signal directions: in std_LOGIC_VECTOR(2 downto 0);
 		signal herox_20, heroy_20: in integer
 	);
@@ -127,7 +127,7 @@ begin
 					end if;
 				end if;
 			end if;
-			
+
 			if writeTo = ramLines * 800 - 1 then
 				writeTo <= (others => '0'); -- the video memory wrap back
 			else
@@ -198,20 +198,20 @@ begin
 					-- writeData <= "000000000";
 					imageReadAddress <= (others => '0');
 			end case;
-			
+
 			-- direction(2): face left / right direction(1,0): "00" no movement "01" horizontal move "10" up "11" down
 			--direction(2) : face left / right
 			--direction(1) : whether move vertically
 			--direction(0): whether move horizontally/whether move upward
-			
-			if y_20 > heroy_20 then 
-				if x_20 > herox_20 then
+
+			if y_20 >= heroy_20 then
+				if x_20 >= herox_20 then
 					heroReadAddress <=  heroMapNum &  std_logic_vector(to_unsigned(20 + heroy_20 - y_20, 5)) & std_logic_vector(to_unsigned(20 + herox_20 - x_20, 5));
 				else
 					heroReadAddress <=  heroMapNum &  std_logic_vector(to_unsigned(20 + heroy_20 - y_20, 5)) & std_logic_vector(to_unsigned(herox_20 - x_20, 5));
 				end if;
 			else
-				if x_20 > herox_20 then
+				if x_20 >= herox_20 then
 					heroReadAddress <=  heroMapNum &  std_logic_vector(to_unsigned(heroy_20 - y_20, 5)) & std_logic_vector(to_unsigned(20 + herox_20 - x_20, 5));
 				else
 					heroReadAddress <=  heroMapNum &  std_logic_vector(to_unsigned(heroy_20 - y_20, 5)) & std_logic_vector(to_unsigned(herox_20 - x_20, 5));
@@ -227,7 +227,7 @@ begin
 			lastColor <= (others => '0');
 		else
 			if x < 640 and y < 480 then -- inside the map
-				if  heroColorOutput = "000000000" or heroX + 0 > x or heroY + 0 > y or  x > heroX + 19 or  y > heroY + 19  then
+				if  heroColorOutput = "111111111" or heroX + 0 > x or heroY + 0 > y or  x > heroX + 19 or  y > heroY + 19  then
 					if enemy_exist = '0' or enemyX + 6 > x or enemyY + 7 > y or x > enemyX + 14 or Y > enemyY + 19 then
 			--	if  heroX > x or heroY > y or  x > heroX + 19 or  y > heroY + 19  then
 			--		if enemy_exist = '0' or enemyX > x or enemyY > y or x > enemyX + 19 or Y > enemyY + 19 then
