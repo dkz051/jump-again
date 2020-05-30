@@ -78,7 +78,16 @@ begin
 			heroMapNum <= "01000";
 		elsif rising_edge(SlowClock1) then
 		-- update heroMapNum according to directions
-			heroMapNum <= "01000";
+			case directions is 
+				when "000" =>
+				when "001" =>
+				when "010" =>
+				when "011" =>
+				when "100" =>
+				when "101" =>
+				when "110" =>
+				when "111" =>
+			end case;
 		end if;
 	end process;
 	process(reset, clock)
@@ -206,15 +215,15 @@ begin
 			
 			if y_20 > heroy_20 then 
 				if x_20 > herox_20 then
-					heroReadAddress <=  heroMapNum &  std_logic_vector(to_unsigned(20 + heroy_20 - y_20, 5)) & std_logic_vector(to_unsigned(20 + herox_20 - x_20, 5));
+					heroReadAddress <=  heroMapNum &  std_logic_vector(to_unsigned(20 + y_20 - heroy_20, 5)) & std_logic_vector(to_unsigned(20 + x_20 - herox_20, 5));
 				else
-					heroReadAddress <=  heroMapNum &  std_logic_vector(to_unsigned(20 + heroy_20 - y_20, 5)) & std_logic_vector(to_unsigned(herox_20 - x_20, 5));
+					heroReadAddress <=  heroMapNum &  std_logic_vector(to_unsigned(20 + y_20 - heroy_20, 5)) & std_logic_vector(to_unsigned(x_20 - herox_20, 5));
 				end if;
 			else
 				if x_20 > herox_20 then
-					heroReadAddress <=  heroMapNum &  std_logic_vector(to_unsigned(heroy_20 - y_20, 5)) & std_logic_vector(to_unsigned(20 + herox_20 - x_20, 5));
+					heroReadAddress <=  heroMapNum &  std_logic_vector(to_unsigned(y_20 - heroy_20, 5)) & std_logic_vector(to_unsigned(20 + x_20 - herox_20, 5));
 				else
-					heroReadAddress <=  heroMapNum &  std_logic_vector(to_unsigned(heroy_20 - y_20, 5)) & std_logic_vector(to_unsigned(herox_20 - x_20, 5));
+					heroReadAddress <=  heroMapNum &  std_logic_vector(to_unsigned(y_20 - heroy_20, 5)) & std_logic_vector(to_unsigned(x_20 - herox_20, 5));
 				end if;
 			end if;
 			-- assign heroReadAddress
@@ -227,7 +236,7 @@ begin
 			lastColor <= (others => '0');
 		else
 			if x < 640 and y < 480 then -- inside the map
-				if  heroColorOutput = "000000000" or heroX + 0 > x or heroY + 0 > y or  x > heroX + 19 or  y > heroY + 19  then
+				if  heroColorOutput = "111111111" or heroX + 0 > x or heroY + 0 > y or  x > heroX + 19 or  y > heroY + 19  then
 					if enemy_exist = '0' or enemyX + 6 > x or enemyY + 7 > y or x > enemyX + 14 or Y > enemyY + 19 then
 			--	if  heroX > x or heroY > y or  x > heroX + 19 or  y > heroY + 19  then
 			--		if enemy_exist = '0' or enemyX > x or enemyY > y or x > enemyX + 19 or Y > enemyY + 19 then
