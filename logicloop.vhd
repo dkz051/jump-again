@@ -190,7 +190,7 @@ begin
 			EnemyExist <= '0';
 			reverse <= '0';
 			should_rev <= '0';
-			directions <= "100"; -- direction(2): face left / right direction(1,0): "00" no movement "01" horizontal move "10" up "11" down
+			directions <= "000"; -- direction(2): face left / right direction(1,0): "00" no movement "01" horizontal move "10" up "11" down
 			rev_counter <= 0;
 			--direction(2) : face left / right
 			--direction(1) : whether move vertically
@@ -210,7 +210,7 @@ begin
 				reload_map <= '0';
 				reverse <= '0';
 				should_rev <= '0';
-				directions <= "100";
+				directions <= "000";
 				rev_counter <= 0;
 			else
 			 reverse <= '0';
