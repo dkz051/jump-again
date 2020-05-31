@@ -1,4 +1,4 @@
-maplist = ["final0.txt", "final1.txt", "final2.txt", "final3.txt", "final4.txt", "final5.txt"] 
+maplist = ["final00.txt", "final0.txt", "final1.txt", "final2.txt", "final3.txt", "final4.txt", "final5.txt"] 
 f = open("map0.mif", "w")
 f.write("WIDTH=9;\n")
 f.write("DEPTH=%d;\n"%(256*len(maplist)))
