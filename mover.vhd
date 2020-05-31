@@ -28,6 +28,7 @@ signal last_keyUp: std_logic;
 signal buf_plusY: std_logic;
 signal canjump1,canjump2: std_logic;
 signal reverse_g: std_logic;
+signal buf_reverse: std_logic;
 begin
 	revG <= reverse_g;
 	process(rst,reload_map, reverse) is
@@ -48,6 +49,7 @@ begin
 			canjump1 <= '1';
 			canjump2 <= '1';
 			last_keyUp <= '0';
+			buf_reverse <= '0';
 		elsif rising_edge(clk) then
 			
 			if last_keyUp = '0' and keyUp = '1' then
@@ -88,7 +90,12 @@ begin
 				equalX <= '1';
 				counter_x <= counter_x + 1;
 			end if;
-			
+			if buf_reverse /= reverse_g then
+				buf_reverse <= not buf_reverse;
+				speed_y <= 0;
+				product <= 0;
+				time_accumu_y <= 0;
+			end if;
 			if product > 500 or product < -500 then
 				equalY <= '0';
 				time_accumu_y <= 0;
