@@ -107,11 +107,11 @@ void setup() {
 
 void loop() {
   float ax, ay, az, gx, gy, gz;
-  Serial.println("New loop");
+//  Serial.println("New loop");
   getAcceleration(ax, ay, az);
-  Serial.println("Got acceleration");
+//  Serial.println("Got acceleration");
   getRotation(gx, gy, gz);
-  Serial.println("Got rotation");
+//  Serial.println("Got rotation");
 
   float a_z = az - oaz;
   float g_y = gy - ogy;
@@ -133,10 +133,10 @@ void loop() {
     Serial.print("\t\t-");
   }
 
-  if (rot_y < -5.0) {
+  if (rot_y < -8.0) {
     data |= 0x1;
     Serial.println("R");
-  } else if (rot_y > 5.0) {
+  } else if (rot_y > 8.0) {
     data |= 0x2;
     Serial.println("L");
   } else {
