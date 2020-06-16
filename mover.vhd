@@ -9,9 +9,8 @@ entity mover is
 		-- x_t, y_t, s_t are all integer types
 		-- x_t, y_t for coordinate, s_t for speed
 		-- should we use higher resolution than 640*480 in computing?
-		-- not much overhead if x is 0 to 64000, y is 0 to 48000 when physics simulation?
 		-- mover consider deltaX, deltaY (0 or 1), not absolute X, Y
-		clk, rst: in std_logic; -- clk is very important for this component
+		clk, rst: in std_logic; 
 		keyLeft, keyUp, keyRight, crash_Y, crash_down, reverse, reload_map: in std_logic; -- delta_Y is ignored, consider equalY as '1', speed_Y set to 0
 
 		equalX, equalY, plusX, plusY,revG: out std_logic  -- equalX: X+=0 plusX: X+=1(move right) plusY: Y+=1(move down)
@@ -21,13 +20,13 @@ entity mover is
 end entity;
 architecture move of mover is
 signal counter_x: integer; -- 50 pixel / second
-signal time_accumu_y: integer;
-signal speed_y: integer;
+signal time_accumu_y: integer; -- approximate integral v*dt
+signal speed_y: integer; -- instant speed in y direction
 signal product: integer;  -- speed_y * time_accumu_y
-signal last_keyUp: std_logic;
+signal last_keyUp: std_logic; -- monitor the state of keyUp
 signal buf_plusY: std_logic;
-signal canjump1,canjump2: std_logic;
-signal reverse_g: std_logic;
+signal canjump1,canjump2: std_logic; -- flag for jump, reset when touch ground
+signal reverse_g: std_logic; -- whether the gravity is reversed
 signal buf_reverse: std_logic;
 begin
 	revG <= reverse_g;
@@ -52,12 +51,12 @@ begin
 			buf_reverse <= '0';
 		elsif rising_edge(clk) then
 			
-			if last_keyUp = '0' and keyUp = '1' then
+			if last_keyUp = '0' and keyUp = '1' then -- keyUp is pressed
 				if canjump2 = '1' then
 					canjump2 <= canjump1;
 					canjump1 <= '0';
-					if reverse_g = '0' then
-						speed_y <= 224;
+					if reverse_g = '0' then -- check the direction of gravity
+						speed_y <= 224; -- after jump, set speed_y to a big value
 						product <= to_integer(shift_left(to_signed(time_accumu_y, 31), 7));
 
 					else
@@ -67,7 +66,7 @@ begin
 					end if;
 				end if;
 			end if;
-			if counter_x = 9 then
+			if counter_x = 9 then -- use appropriate frequency to update X oordinate
 				counter_x <= 0;
 				if keyLeft = '1' and keyRight = '0' then
 					equalX <= '0';
@@ -78,7 +77,7 @@ begin
 				else
 					equalX <= '1';
 				end if;
-				if reverse_g = '0' then
+				if reverse_g = '0' then -- speed_y change because of gravity
 				speed_y  <= speed_y - 8;
 				product <= product -  to_integer(shift_left(to_signed(time_accumu_y, 31), 3));
 				else
@@ -96,7 +95,7 @@ begin
 				product <= 0;
 				time_accumu_y <= 0;
 			end if;
-			if product > 500 or product < -500 then
+			if product > 500 or product < -500 then -- check the integral of vdt in y direction, move 1 pixel if possible
 				equalY <= '0';
 				time_accumu_y <= 0;
 				product <= 0;
@@ -111,16 +110,16 @@ begin
 			else
 				equalY <= '1';
 				time_accumu_y <= time_accumu_y + 1;
-				product <= product + speed_y;
+				product <= product + speed_y; -- update the integral
 			end if;
 			
-			if crash_Y = '1' then
+			if crash_Y = '1' then -- this signal imply crashing into a block vertically, no move in y_direction
 				speed_y <= 0;
 				product <= 0;
 				time_accumu_y <= 0;
 				plusY <= not buf_plusY;
 				buf_plusY <= not buf_plusY;
-				if reverse_g /= crash_down then
+				if reverse_g /= crash_down then --reset jump state
 					canjump1 <= '1';
 					canjump2 <= '1';
 				end if;
