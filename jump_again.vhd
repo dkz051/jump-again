@@ -19,7 +19,7 @@ entity JumpAgain is -- 顶层 entity
 		vgaR, vgaG, vgaB: out std_logic_vector(2 downto 0); -- VGA 红绿蓝分量 (0-7)
 
 		-- 以下 12 个信号接到 LED 上（原则上可以接数码管 56 个信号中的任何一组），将上下左右四个信号显示出来（调试用）
-		kUp, kDown, kLeft, kRight: out std_logic; -- 键盘上(E)下(S)左(D)右(F)键，注意不是 WASD 键位
+		kUp, kDown, kLeft, kRight: out std_logic; -- 键盘上(E)下(D)左(S)右(F)键，注意不是 WASD 键位
 		sUp, sDown, sLeft, sRight: out std_logic; -- 传感器输出的上下左右信号
 		up, down, left, right: out std_logic -- 组合上下左右信号（键盘信号和传感器信号取「或」）
 	);
@@ -242,7 +242,6 @@ begin
 		clock, reset, keyLeft or sensorLeft, keyRight or sensorRight, keyUp or sensorUp,
 		-- 主角 X/敌人 X/主角 Y/敌人 Y/敌人是否存在/重力反向标志
 		heroX, enemyX, heroY, enemyY, enemy_exist, reverseG,
-		-- number of maps, address to fetch level data, the data fetched
 		-- 地图数量/读关卡数据的哪个地址/读出来的相应关卡数据
 		num_of_map, logicReadAddress, logicReadReturn,
 		-- 朝向方向信息/主角坐标对 20 取模的结果
