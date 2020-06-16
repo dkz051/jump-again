@@ -9,14 +9,14 @@ entity logicloop is
 	port(
 --		crash_block: out std_logic_vector(2 downto 0);
 		clk,rst: in std_logic; -- we need clock clk: 100 MHz
-		keyLeft,keyRight,keyUp: in std_logic; -- "keyboard input"
-		curX,enemyX: out std_logic_vector(9 downto 0);
+		keyLeft,keyRight,keyUp: in std_logic; -- "keyboard input", may be simulated by sensor
+		curX,enemyX: out std_logic_vector(9 downto 0); --output hero X, Y, enemy X, Y to renderer
 		curY,enemyY: out std_logic_vector(8 downto 0);
-		enemy_exist, reverse_g: out std_logic;
+		enemy_exist, reverse_g: out std_logic; -- whether enemy should be displayed, whether gravity is reversed, passed to renderer
 		num_of_map: out integer;  -- which map?
-		mapReadAddress: out std_logic_vector(15 downto 0);
+		mapReadAddress: out std_logic_vector(15 downto 0); -- read block type, used by crash checking
 		mapReadReturn: in std_logic_vector(8 downto 0);
-		move_direction: out std_logic_vector(2 downto 0);
+		move_direction: out std_logic_vector(2 downto 0); -- hero orientation,passed to renderer
 		herox_20, heroy_20: out integer
 		-- if there's no moving parts other than hero, if the status of grid won't change, then,
 		-- (X,Y) of hero and number of map, is enough to send to VGA control module
@@ -26,21 +26,11 @@ entity logicloop is
 		-- if equalX = '1', then no crash in X direction
 		-- if equalY = '1', then no crash in Y direction
 		-- if equalX = '0', then only crash in the moving direction (only crash left or right)
-		-- actually only two block may be crashing
+		-- actually only 4 block may be crashing
 	    );
 end entity logicloop;	
 architecture logic of logicloop is
---	component crash_checker is 
---	port(
---        clk: in std_logic;
---        curX,deltaX, gridX: in x_t; curY,deltaY, gridY: in y_t; -- Xord: 1..640 Yord: 1...480
---        grid: in grid_t; -- type of grid, use enumeration?
---        nextX: out x_t; nextY: out y_t; -- the modified coordinate(crash into brick?)
---        crash: out crash_t; -- 5 possible values: no crash, crash in a direction(WASD) up crash or down crash cause Y speed change to 0
---        success, death: out std_logic --whether crashing into brick, succeed, or die
---        );
---	end component;
-	component reader is 
+	component reader is -- read block type (x, y) from rom 
 		port(
 			num_of_map: in integer;
 			clk: in std_logic;
@@ -61,7 +51,7 @@ architecture logic of logicloop is
 	    -- delta X, Y, need to be modified by crach checker
 	    ); -- when rst, set speed_y to 0, then free falling
 	end component;
-	component xyqueue
+	component xyqueue -- queue of (x, y) ordinates, 500 ordinates, allow the enemy emerges at the position of hero 5 seconds ago
 	PORT
 	(
 		address_a		: IN STD_LOGIC_VECTOR (8 DOWNTO 0); --read
@@ -116,7 +106,7 @@ begin
 		queue_read_data,open);
 	readmap: reader port map(numofmap,clk, mapReadAddress,mapReadReturn,queryX,queryY,ans_type); 
 	move: mover port map(clk2, rst, keyLeft, keyUp, keyRight,crash_Y,crash_down,reverse,reload_map, equalX, equalY, plusX, plusY, reverseG);
-	process(clk,rst)
+	process(clk,rst) --  counter at different frequency
 	begin
 		if rst = '0' then
 			clk1_counter <= 0;
@@ -150,7 +140,7 @@ begin
 			end if;
 		end if;
 	end process;
-	process(rst, reload_map, clk3)
+	process(rst, reload_map, clk3) -- enemy at the position of hero 5 seconds ago
 	begin
 		if rst = '0' or reload_map = '1' then
 			queue_read_addr <= "000001010";
@@ -159,7 +149,7 @@ begin
 			clk3_sum <= 0;
 		elsif rising_edge(clk3) then
 			queue_write_data(8 downto 0) <= heroY(8 downto 0);
-			queue_write_data(18 downto 9)<= heroX(9 downto 0);
+			queue_write_data(18 downto 9)<= heroX(9 downto 0); -- 32 bit word
 			enemy_X(9 downto 0) <= queue_read_data(18 downto 9);
 			enemy_Y(8 downto 0) <= queue_read_data(8 downto 0);
 			if queue_write_addr = 511 then
@@ -167,7 +157,7 @@ begin
 			else
 				queue_write_addr <= queue_write_addr + 1;
 			end if; -- two pointer, queue_read_addr shoule follow behind queue_write_addr
-			if queue_read_addr = 511 then
+			if queue_read_addr = 511 then -- cyclic queue, size 512
 				queue_read_addr <= (others => '0');
 			else
 				queue_read_addr <= queue_read_addr + 1;
@@ -181,7 +171,7 @@ begin
 			numofmap <= 0;
 			heroX <= "0000011110"; -- 30
 			heroY <= "110111000"; -- 440
-			x_20 <= 10;
+			x_20 <= 10; -- fixed initial ordinate (30, 440)
 			y_20 <= 0;
 			blockX <= 1;
 			blockY <= 22;
@@ -195,7 +185,7 @@ begin
 			--direction(2) : face left / right
 			--direction(1) : whether move vertically
 			--direction(0): whether move horizontally/whether move upward
-		elsif  rising_edge(clk1) then -- 8 state, check 4 block in order. 0 state: request the block type 1 state: get the block type and try to issue signal
+		elsif  rising_edge(clk1) then -- 10 state, check 4 block in order. 0 state: request the block type 1 state: get the block type and emit signal
 			if clk3_sum = 515 then -- 5 second
 				EnemyExist <= '1';
 			end if;
@@ -217,7 +207,7 @@ begin
 			 if rev_counter > 0 then
 				rev_counter <= rev_counter - 1;
 			 end if;
-			case flag is 
+			case flag is -- use DFA to check crashing, 10  
 			 when 0 => -- move X, crash upper block
 						--state 0, 1, 2: check if crash_X
 					real_directions <= directions; -- after finish a round , emit directions
@@ -229,7 +219,7 @@ begin
 					buf_plusX <= plusX;
 					buf_equalX <= equalX;
 					
-					if plusX = '1' then -- move right problem: blockX - 1 < 0???? will wrong at edge
+					if plusX = '1' then -- move right 
 						queryX <= blockX + 1;
 						queryY <= blockY;
 					else  --move left
@@ -245,15 +235,12 @@ begin
 							when "010" => --death
 								reload_map <= '1';
 								EnemyExist <= '0';
-
-								-- numofmap <= numofmap;
 							when "011" => -- success, next map
 								reload_map <= '1';
 								EnemyExist <= '0';
 								numofmap <= numofmap + 1;
 							when "100" =>
 								crash_X <= '1';
-							--	should_rev <= '1';
 							when others =>
 							end case;
 					end if;
@@ -275,14 +262,12 @@ begin
 						when "010" =>
 							reload_map <= '1';
 							EnemyExist <= '0';
-							-- numofmap <= numofmap;
 						when "011" => -- success, next map
 							reload_map <= '1';
 							EnemyExist <= '0';
 							numofmap <= numofmap + 1;
 						when "100" =>
 							crash_X <= '1';
-						--	should_rev <= '1';
 						when others =>
 						end case;
 					end if;
@@ -291,7 +276,6 @@ begin
 				if buf_equalX = '0' and crash_X = '0' then
 						if buf_plusX = '1' then
 							if heroX < 619 then
-							-- try heroX <= heroX + 1; maybe crash?
 								heroX <= heroX + 1;
 								directions(2) <= '1'; --face right
 								directions(0) <= '1';
@@ -335,15 +319,14 @@ begin
 						when "001" =>
 							crash_Y <= '1';
 							crash_down <= buf_plusY;
-						when "010" =>
+						when "010" => --death, reload map
 							reload_map <= '1';
 							EnemyExist <= '0';
-							-- numofmap <= numofmap;
 						when "011" => -- success, next map
 							reload_map <= '1';
 							EnemyExist <= '0';
 							numofmap <= numofmap + 1;
-						when "100" =>
+						when "100" => --gravity reverse
 							crash_Y <= '1';
 							should_rev <= '1';
 							crash_down <= buf_plusY;
@@ -369,7 +352,6 @@ begin
 							when "010" =>
 								reload_map <= '1';
 								EnemyExist <= '0';
-								-- numofmap <= numofmap;
 							when "011" => -- success, next map
 								reload_map <= '1';
 								EnemyExist <= '0';
@@ -385,7 +367,7 @@ begin
 			when others => -- when 9
 					if rev_counter = 0 and should_rev = '1' then
 						reverse <= '1';
-						rev_counter <= 5000;
+						rev_counter <= 5000; --wait for 1 second before next reverse
 					end if;
 					if buf_equalY = '0' and crash_Y = '0' then
 						if buf_plusY = '1' then
@@ -421,7 +403,7 @@ begin
 						end if;
 					end if;
 					-------------------------check enemy
-					if EnemyExist = '1' then
+					if EnemyExist = '1' then -- crash into enemy , reload map
 						if enemy_X  < 8 + heroX and heroX  < 8 + enemy_X and enemy_Y  < 13 + heroY and heroY  < 13 + enemy_Y then
 							reload_map <= '1';
 							EnemyExist <= '0';
@@ -465,6 +447,7 @@ begin
 	
 	process(block_num)
 	begin
+		-- implement divide by 3 using bitwise operator
 		addr <= ((block_num sll 1) + (block_num sll 2) + (block_num sll 4) + (block_num sll 6) + (block_num sll 8) + (block_num sll 10) + (block_num sll 12) + (block_num sll 14)) srl 16;
 	end process;
 	
