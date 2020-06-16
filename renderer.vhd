@@ -6,58 +6,57 @@ use ieee.numeric_std.all;
 
 entity Renderer is
 	port(
-	--	crash_block: in std_logic_vector(2 downto 0);
-		signal num_of_map: in integer;
+          	signal num_of_map: in integer; -- which map is displaying?
 		signal reset: in std_logic;
 		signal clock: in std_logic; -- 25 MHz clock
 
 
-		signal heroX,enemyX: in std_logic_vector(9 downto 0);
-		signal heroY,enemyY: in std_logic_vector(8 downto 0);
-		signal enemy_exist,reverse_g: in std_logic;
+		signal heroX,enemyX: in std_logic_vector(9 downto 0); -- X ordinate of hero and enemy(upmost ordinate)
+		signal heroY,enemyY: in std_logic_vector(8 downto 0); -- Y ordinate of hero and enemy(leftmost ordinate)
+		signal enemy_exist,reverse_g: in std_logic; -- flag,whether enemy exists, whether the gravity is reversing, the image will be different
 
-		signal readAddress: out std_logic_vector(15 downto 0);
-		signal readOutput: in std_logic_vector(8 downto 0);
+		signal readAddress: out std_logic_vector(15 downto 0); -- connect to rom, read the map infomation(the type of blocks)
+		signal readOutput: in std_logic_vector(8 downto 0); -- output of rom, type of 3 continuous blocks(3 bit for one block)
 
-		signal writeAddress: out std_logic_vector(13 downto 0);
-		signal writeContent: out std_logic_vector(8 downto 0);
+		signal writeAddress: out std_logic_vector(13 downto 0); -- connect to video memory
+		signal writeContent: out std_logic_vector(8 downto 0); -- write to video memory, 9 bit RGB color of 1 pixel
 
-		signal imageReadAddress: out std_logic_vector(14 downto 0);
+		signal imageReadAddress: out std_logic_vector(14 downto 0); -- read the 20 * 20 image resources for blocks
 		signal imageColorOutput: in std_logic_vector(8 downto 0);
 
-		signal heroReadAddress: out std_logic_vector(14 downto 0);
+		signal heroReadAddress: out std_logic_vector(14 downto 0); -- read the 20 * 20 image resources for hero
 		signal heroColorOutput: in std_logic_vector(8 downto 0);
 
-		signal directions: in std_LOGIC_VECTOR(2 downto 0);
-		signal herox_20, heroy_20: in integer
+		signal directions: in std_LOGIC_VECTOR(2 downto 0); -- the orientation of hero, used to choose hero image resources 
+		signal herox_20, heroy_20: in integer -- hero X, Y ordinate(mod 20), used to choose the correct pixel of image resources 
 	);
 end entity Renderer;
 
 architecture Render of Renderer is
-	constant ramLines: integer := 12;
+	constant ramLines: integer := 12; -- how many lines does video memory have
 
 	signal x: std_logic_vector(9 downto 0) := (others => '0');
 	signal y: std_logic_vector(9 downto 0) := (others => '0');
 	signal color_typ: std_logic_vector(2 downto 0):= (others => '0');
 	signal x_20, y_20: integer; -- x%20, y%20, maintained by increment
 	signal cnt3_x0: integer;
-	signal cnt3: integer;
+	signal cnt3: integer; -- each word contain 3 block (3 bit for one block), which block is the current block?(0, 1, 2)
 	signal readFrom: std_logic_vector(15 downto 0) := (others => '0');
-	signal readFrom_x0: std_logic_vector(15 downto 0) := (others => '0');
+	signal readFrom_x0: std_logic_vector(15 downto 0) := (others => '0'); -- wrap back at the end of one line
 	signal writeTo: std_logic_vector(13 downto 0) := (others => '0');
 	signal writeData: std_logic_vector(8 downto 0) := (others => '0');
-	signal lastData: std_logic_vector(2 downto 0); -- last data in a word, (2 downto 0)
+	signal lastData: std_logic_vector(2 downto 0); -- last data in a word, (2 downto 0), used to prefetch next word without losing data in last word
 	signal firstData: std_logic_vector(2 downto 0); -- first data in a line
 	signal lastColor: std_logic_vector(8 downto 0);
 	signal heroMapNum: std_logic_vector(4 downto 0);
-	signal SlowClock1,SlowClock2: std_logic;
+	signal SlowClock1,SlowClock2: std_logic; -- SlowClock, SlowCounter: animate the hero, change the image resources according to slow counter(2Hz, 4Hz)
 	signal slow_counter: integer;
 	signal slow_count2,slow_count4: integer;
 begin
 	readAddress <= readFrom;
 	writeAddress <= writeTo;
 	writeContent <= writeData;
-	process(reset, clock)
+	process(reset, clock) -- generate slow clock used to animate the hero (2 fps/4 fps)
 	begin
 		if reset = '0' then
 			slow_counter <= 0;
@@ -85,7 +84,7 @@ begin
 			end if;
 		end if;
 	end process;
-	process(reset, SlowClock1)
+	process(reset, SlowClock1) -- choose the correct image resources for Hero: first choose orientation type, then choose animation frames according to timer
 	begin
 		if reset = '0' then
 			heroMapNum <= "01000";
@@ -171,27 +170,33 @@ begin
 			end case;
 		end if;
 	end process;
-	process(reset, clock)
+	process(reset, clock) 
+	-- simple 2 level pipeline. render a pixel need 2 steps:
+	-- 1. choose the type of block according to map infomation, read the color from image resources
+	-- 2. write the color to video memory
+	-- every pulse, we write the last pixel's color to video memory, read the next pixel's color from image resources
 	begin
 		if reset = '0' then
-			--x <= (others => '0');
-			x <= ((0)=>'1', others => '0'); -- (x,y): the pixel we are rendering (x,y) - 1: the pixel we are feeding to video memory (last Color)
+			x <= ((0)=>'1', others => '0');
+			-- (x,y): the pixel we are rendering
+			-- (x,y) - 1: the pixel we are feeding to video memory (last Color)
 			y <= (others => '0');
 			x_20 <= 0;
 			y_20 <= 0;
-			readFrom <= std_logic_vector(to_unsigned(num_of_map * 256, 16));
+			readFrom <= std_logic_vector(to_unsigned(num_of_map * 256, 16)); -- each map occupy 256 words
 			writeTo <= (others => '0');
 			readFrom_x0 <= std_logic_vector(to_unsigned(num_of_map * 256, 16));
 			cnt3_x0 <= 0;
 		elsif rising_edge(clock) then
+			-- read the block type from map, read one word, get infomation of three block 
 			if x = 700 then
 				lastData <= readOutput(2 downto 0);
 			end if;
 			writeData <= lastColor;
 			if x < 640 and y < 480 then
 				if x = 639 and y = 479 then
-					readFrom_x0 <= std_logic_vector(to_unsigned(num_of_map * 256, 16));
-					cnt3_x0 <= 0;
+					readFrom_x0 <= std_logic_vector(to_unsigned(num_of_map * 256, 16)); -- the address of the first block, wrap back at the end of one line
+					cnt3_x0 <= 0; 
 					readFrom <= std_logic_vector(to_unsigned(num_of_map * 256, 16));
 					cnt3 <= 0;
 				else
@@ -206,7 +211,7 @@ begin
 						else -- y_20 = 19 or
 							if cnt3 = 1 then
 								lastData <= readOutput(2 downto 0);
-								readFrom <= readFrom +  1;
+								readFrom <= readFrom +  1; -- prefetch, change the readFrom address before one pulse 
 								cnt3 <= cnt3 + 1;
 							elsif cnt3 = 2 then
 								cnt3 <= 0;
@@ -249,8 +254,8 @@ begin
 			end if;
 		end if;
 	end process;
-	process (cnt3, readOutput)
-	begin
+	process (cnt3, readOutput) -- we use 9 bit words to store map, 9 bit word contains 3 blocks, numbered by 0, 1, 2
+	begin 
 		case cnt3 is
 				when 0 =>
 					color_typ <= readOutput(8 downto 6);
@@ -264,28 +269,22 @@ begin
 	process(x)
 	begin
 		if x < 640 and y < 480 then -- inside the map
-			case color_typ is
+			case color_typ is -- now we know the type of current block, read the corresponding pixel in image resource
 				when "000" => -- air
-					-- writeData <= "111111111";
 					imageReadAddress <= "00000" & std_logic_vector(to_unsigned(y_20, 5)) & std_logic_vector(to_unsigned(x_20, 5));
 				when "001" => -- brick
-					-- writedata <= "111000000";
 					imageReadAddress <= "00001" & std_logic_vector(to_unsigned(y_20, 5)) & std_logic_vector(to_unsigned(x_20, 5));
 				when "010" => -- trap
-					-- writeData <= "000111000";
 					imageReadAddress <= "00010" & std_logic_vector(to_unsigned(y_20, 5)) & std_logic_vector(to_unsigned(x_20, 5));
 				when "011" => -- destination
-					-- writeData <= "111111000";
 					imageReadAddress <= "00011" & std_logic_vector(to_unsigned(y_20, 5)) & std_logic_vector(to_unsigned(x_20, 5));
 				when "100" =>
-					-- writeData <= "101001100";
 					if reverse_g = '0' then
 						imageReadAddress <= "00100" & std_logic_vector(to_unsigned(y_20, 5)) & std_logic_vector(to_unsigned(x_20, 5));
 					else
 						imageReadAddress <= "00101" & std_logic_vector(to_unsigned(y_20, 5)) & std_logic_vector(to_unsigned(x_20, 5));
 					end if;
 				when others =>
-					-- writeData <= "000000000";
 					imageReadAddress <= (others => '0');
 			end case;
 
@@ -295,6 +294,7 @@ begin
 			--direction(0): whether move horizontally/whether move upward
 			-- normal: (y_20 - heroy_20) % 20
 			-- now: (19 - y_20 + heroy_20) %20 
+			-- heroMapNum: which image resource should be use.  then concatenate it with the relative x, y 
 			if y_20 >= heroy_20 then
 				if x_20 >= herox_20 then
 					heroReadAddress <=  heroMapNum &  std_logic_vector(to_unsigned(19 + heroy_20 - y_20, 5)) & std_logic_vector(to_unsigned(19 + herox_20 - x_20, 5));
@@ -318,20 +318,18 @@ begin
 			lastColor <= (others => '0');
 		else
 			if x < 640 and y < 480 then -- inside the map
-				if  heroColorOutput = "111111111" or heroX + 0 > x or heroY + 0 > y or  x > heroX + 19 or  y > heroY + 19  then
+				if  heroColorOutput = "111111111" or heroX + 0 > x or heroY + 0 > y or  x > heroX + 19 or  y > heroY + 19  then 
 					if enemy_exist = '0' or enemyX + 6 > x or enemyY + 7 > y or x > enemyX + 14 or Y > enemyY + 19 then
-			--	if  heroX > x or heroY > y or  x > heroX + 19 or  y > heroY + 19  then
-			--		if enemy_exist = '0' or enemyX > x or enemyY > y or x > enemyX + 19 or Y > enemyY + 19 then
-						lastColor <= imageColorOutput; -- map
+						lastColor <= imageColorOutput; -- this pixel is not enemy or hero, output the color of block 
 					else
-						lastColor <= "000000000"; -- black enemy
+						lastColor <= "000000000"; -- this pixel is part of the enemy (black)
 					end if;
-				else
+				else -- this pixel is part of the hero
 					lastColor <= heroColorOutput;
 				end if;
 			else
 				lastColor <= (others => '0');
-			end if; -- render a pixel, output it in the next pulse
+			end if; -- render a pixel in lastColor, output it in the next pulse
 		end if;
 	end process;
 end architecture Render;
