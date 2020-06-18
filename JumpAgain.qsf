@@ -108,9 +108,7 @@ set_global_assignment -name VHDL_FILE video_memory.vhd
 set_global_assignment -name SOURCE_FILE video_memory.cmp
 set_global_assignment -name VHDL_FILE data.vhd
 set_global_assignment -name SOURCE_FILE data.cmp
-set_global_assignment -name MIF_FILE b.mif
 set_global_assignment -name VHDL_FILE vga_controller.vhd
-set_global_assignment -name VHDL_FILE led_7.vhd
 set_global_assignment -name VHDL_FILE keyboard_control.vhd
 set_global_assignment -name VHDL_FILE keyboard.vhd
 set_global_assignment -name VHDL_FILE jump_again.vhd
